@@ -1,0 +1,32 @@
+<div class="question-container">
+    <h2>Dodaj nowe pytanie do quizu</h2>
+    <form [formGroup]="questionForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="questionText">Treść pytania:</label>
+        <textarea 
+          id="questionText" 
+          formControlName="questionText"
+          class="form-control"
+          rows="4"
+        ></textarea>
+        
+        <div *ngIf="questionForm.get('questionText')?.invalid && questionForm.get('questionText')?.touched" 
+             class="error-message">
+          <div *ngIf="questionForm.get('questionText')?.hasError('required')">
+            Pole jest wymagane
+          </div>
+          <div *ngIf="questionForm.get('questionText')?.hasError('minlength')">
+            Pytanie musi mieć przynajmniej 5 znaków
+          </div>
+        </div>
+      </div>
+  
+      <button 
+        type="submit" 
+        class="submit-btn"
+        [disabled]="questionForm.invalid"
+      >
+        Dodaj pytanie
+      </button>
+    </form>
+  </div>

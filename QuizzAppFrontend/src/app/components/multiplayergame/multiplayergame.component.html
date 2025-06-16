@@ -1,0 +1,256 @@
+<div class="multiplayer-container">
+  <div *ngIf="viewState === 'init'" class="init-container">
+    <h2>Stwórz nową grę</h2>
+    <div class="connection-status">
+      Status połączenia: 
+      <span [class.connected]="connectionStatus === 'connected'"
+            [class.connecting]="connectionStatus === 'connecting'"
+            [class.disconnected]="connectionStatus === 'disconnected'">
+        {{ getConnectionStatusText() }}
+      </span>
+    </div>
+    
+    <button (click)="createGame()" 
+            [disabled]="isSubmitting || connectionStatus !== 'connected'">
+      {{ isSubmitting ? 'Tworzenie...' : 'Stwórz grę' }}
+    </button>
+    
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+    
+    <div *ngIf="isSubmitting" class="loading-indicator">
+      <div class="spinner"></div>
+      <p>Tworzenie gry...</p>
+    </div>
+  </div>
+
+  <div *ngIf="viewState === 'gameCreated'" class="game-created-container">
+    <h2>Gra utworzona pomyślnie!</h2>
+    
+    <div class="connection-status">
+      Status połączenia: 
+      <span [class.connected]="connectionStatus === 'connected'"
+            [class.connecting]="connectionStatus === 'connecting'"
+            [class.disconnected]="connectionStatus === 'disconnected'">
+        {{ getConnectionStatusText() }}
+      </span>
+    </div>
+    
+    <div class="link-share-info">
+      <p>Udostępnij link:</p>
+      <div class="game-link">{{ gameLink }}</div>
+      <button (click)="copyGameLink()" class="copy-button">
+        <i class="copy-icon">📋</i> Kopiuj link
+      </button>
+    </div>
+    
+    <h3>Dołącz do gry jako host:</h3>
+    <div class="name-input">
+      <input #hostNameInput type="text" placeholder="Twój nick" [disabled]="isJoining"/>
+      <button (click)="joinGame(hostNameInput.value)" 
+              [disabled]="isJoining || connectionStatus !== 'connected'">
+        {{ isJoining ? 'Dołączanie...' : 'Dołącz do gry' }}
+      </button>
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="viewState === 'nameInput'" class="name-input">
+    <h2>Dołącz do gry</h2>
+    <input #playerNameInput type="text" placeholder="Twój nick" [disabled]="isJoining"/>
+    
+    <div class="connection-status">
+      Status połączenia: 
+      <span [class.connected]="connectionStatus === 'connected'"
+            [class.connecting]="connectionStatus === 'connecting'"
+            [class.disconnected]="connectionStatus === 'disconnected'">
+        {{ getConnectionStatusText() }}
+      </span>
+    </div>
+    
+    <button (click)="joinGame(playerNameInput.value)" 
+            [disabled]="isJoining || connectionStatus !== 'connected'">
+      {{ isJoining ? 'Dołączanie...' : 'Dołącz do gry' }}
+    </button>
+    
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+    
+    <div *ngIf="isJoining" class="loading-indicator">
+      <div class="spinner"></div>
+      <p>Dołączanie do gry...</p>
+    </div>
+  </div>
+
+  <div *ngIf="viewState === 'inGame'">
+    <div *ngIf="playerStatus === 'completed' && gameStatus !== 'completed'" class="waiting-results">
+      <h2>Gratulacje!</h2>
+      <div class="waiting-message">
+        <p>Oczekiwanie na innych graczy...</p>
+        <div class="loading-spinner"></div>
+      </div>
+      <div class="players-list-container">
+        <h3>Gracze:</h3>
+        <div class="players-list">
+          <div *ngFor="let player of players" class="player-card">
+            <div class="player-avatar">{{ player.isHost ? '👑' : '👤' }}</div>
+            <div class="player-name">{{ player.name }}</div>
+            <div class="player-status" *ngIf="player.completed">✅ Unkończono</div>
+            <div class="player-status" *ngIf="!player.completed">⌛ W trakcie</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="gameStatus === 'waiting' && playerStatus === 'playing'">
+      <h2>Oczekiwanie na graczy</h2>
+      
+      <div class="connection-status">
+        Status połączenia: 
+        <span [class.connected]="connectionStatus === 'connected'"
+              [class.connecting]="connectionStatus === 'connecting'"
+              [class.disconnected]="connectionStatus === 'disconnected'">
+          {{ getConnectionStatusText() }}
+        </span>
+      </div>
+      
+      <div class="game-id-container">
+        <p>ID gry: <strong>{{ gameId }}</strong></p>
+        <button class="copy-button" (click)="copyGameLink()">
+          <i class="copy-icon">📋</i> Kopiuj link
+        </button>
+      </div>
+      
+      <div class="link-share-info">
+        <p>Udostępnij link:</p>
+        <div class="game-link">{{ gameLink || 'Generowanie linku...' }}</div>
+      </div>
+      
+      <div class="players-list-container">
+        <h3>Gracze w lobby ({{ players.length }}/2):</h3>
+        <div class="players-list">
+          <div *ngFor="let player of players" class="player-card">
+            <div class="player-avatar">{{ player.isHost ? '👑' : '👤' }}</div>
+            <div class="player-name">{{ player.name }}</div>
+            <div class="player-status" *ngIf="player.completed">✅ Unkończono</div>
+            <div class="player-status" *ngIf="!player.completed && player.isReady">✅ Gotowy</div>
+            <div class="player-status" *ngIf="!player.completed && !player.isReady">❌ Nie gotowy</div>
+          </div>
+          <div *ngIf="players.length < 2" class="player-card waiting">
+            <div class="player-avatar">⏳</div>
+            <div class="player-name">Oczekiwanie na gracza...</div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!isPlayerReady" class="ready-section">
+        <button (click)="markPlayerReady()" class="ready-button">
+          Gotowy
+        </button>
+      </div>
+      <div *ngIf="isPlayerReady && !allPlayersReady" class="waiting-message">
+        Oczekiwanie na gracza...
+      </div>
+      <div *ngIf="allPlayersReady" class="starting-message">
+        Gracze są gotowi... Rozpoczynanie gry...
+      </div>
+    </div>
+
+    <div *ngIf="playerStatus === 'playing' && gameStatus === 'in-progress'">
+      <div class="progress-bar">
+        <div 
+          *ngFor="let status of questionStatuses; let i = index"
+          class="progress-item"
+          [class.correct]="status === 'correct'"
+          [class.incorrect]="status === 'incorrect'"
+          [class.active]="i === currentQuestionIndex"
+          [class.unanswered]="status === 'unanswered'"
+        ></div>
+      </div>
+
+      <div class="game-info">
+        <div>Twoje punkty: {{ currentScore }}</div>
+        <div>Pytanie: {{ currentQuestionIndex + 1 }}/10</div>
+        <div>Gracze online: {{ players.length }}</div>
+      </div>
+
+      <h2>{{ currentQuestion?.questionText }}</h2>
+      
+      <div class="answers-grid">
+        <div 
+          *ngFor="let answer of currentQuestion?.answers" 
+          class="answer-card"
+          [class.selected]="answer === selectedAnswer"
+          [class.correct]="isAnswerSelected && answer.isCorrect"
+          [class.incorrect]="isAnswerSelected && !answer.isCorrect && answer === selectedAnswer"
+          (click)="selectAnswer(answer)"
+        >
+          {{ answer.answerText }}
+        </div>
+      </div>
+      
+      <div *ngIf="isAnswerSelected" class="feedback-message">
+        <div *ngIf="selectedAnswer?.isCorrect" class="correct-feedback">
+          Dobrze
+        </div>
+        <div *ngIf="!selectedAnswer?.isCorrect" class="incorrect-feedback">
+          Źle
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="gameStatus === 'completed'">
+      <h2>Koniec gry</h2>
+      <div class="results">
+        <h3>Ranking graczy:</h3>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Miejsce</th>
+              <th>Nick</th>
+              <th>Punkty</th>
+              <th>Odpowiedzi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let player of players; let i = index">
+              <tr>
+                <td>#{{i + 1}}</td>
+                <td>{{ player.name }}</td>
+                <td>{{ player.score }}</td>
+                <td>
+                  <button (click)="togglePlayerAnswers(player.id)" class="toggle-btn">
+                    {{ expandedPlayers[player.id] ? 'Ukryj' : 'Pokaż' }}
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="expandedPlayers[player.id]" class="answers-row">
+                <td colspan="4">
+                  <div class="player-answers">
+                    <h4>Odpowiedzi {{ player.name }}:</h4>
+                    <div *ngFor="let answer of player.answers; let qi = index" class="answer-item">
+                      <p><strong>Pytanie {{ qi + 1 }}:</strong> 
+                        <span [class.correct]="answer.isCorrect" [class.incorrect]="!answer.isCorrect">
+                          {{ answer.answerText }}
+                          ({{ answer.isCorrect ? 'Poprawna' : 'Niepoprawna' }})
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+  </div>
+</div>

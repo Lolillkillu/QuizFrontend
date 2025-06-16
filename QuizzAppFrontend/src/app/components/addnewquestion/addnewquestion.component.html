@@ -1,0 +1,25 @@
+<div class="question-form-container">
+    <h2>Dodaj nowe pytanie</h2>
+    <form (ngSubmit)="onSubmit()" class="question-form">
+      <div class="form-group">
+        <label for="questionText">Treść pytania:</label>
+        <textarea 
+          id="questionText" 
+          name="questionText" 
+          [(ngModel)]="questionText" 
+          required
+          class="form-control"
+          rows="4"
+        ></textarea>
+      </div>
+  
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="material-icons">save</i> Zapisz
+        </button>
+        <a [routerLink]="['/quizzes', quizId]" class="btn btn-cancel">
+          <i class="material-icons">cancel</i> Anuluj
+        </a>
+      </div>
+    </form>
+  </div>

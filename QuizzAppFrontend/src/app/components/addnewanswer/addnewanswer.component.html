@@ -1,0 +1,35 @@
+<div class="answer-form-container">
+    <h2>Dodaj nową odpowiedź</h2>
+    <form (ngSubmit)="onSubmit()" class="answer-form">
+      <div class="form-group">
+        <label for="answerText">Treść odpowiedzi:</label>
+        <textarea 
+          id="answerText" 
+          name="answerText" 
+          [(ngModel)]="answerText" 
+          required
+          class="form-control"
+        ></textarea>
+      </div>
+  
+      <div class="form-check">
+        <input 
+          type="checkbox" 
+          id="isCorrect" 
+          name="isCorrect" 
+          [(ngModel)]="isCorrect"
+          class="form-check-input"
+        >
+        <label for="isCorrect" class="form-check-label">Poprawna odpowiedź</label>
+      </div>
+  
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="material-icons">save</i> Zapisz
+        </button>
+        <a [routerLink]="['/quizzes', quizId]" class="btn btn-cancel">
+          <i class="material-icons">cancel</i> Anuluj
+        </a>
+      </div>
+    </form>
+  </div>

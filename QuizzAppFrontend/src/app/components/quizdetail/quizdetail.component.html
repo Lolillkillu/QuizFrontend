@@ -1,0 +1,68 @@
+<div *ngIf="isLoading" class="loading">
+  Ładowanie...
+</div>
+
+<div *ngIf="error" class="error">
+  {{ error }}
+</div>
+
+<div *ngIf="quiz" class="quiz-details" @fadeIn>
+  <div class="quiz-header">
+    <h1>{{ quiz.title }}</h1>
+    <a (click)="deleteQuiz()" class="delete-icon" title="Usuń quiz">
+      <i class="material-icons">delete</i>
+    </a>
+  </div>
+  <p *ngIf="quiz.description" class="description">{{ quiz.description }}</p>
+  <p class="author">Autor: {{ quiz.author }}</p>
+
+  <div class="questions-section">
+    <h2>Pytania</h2>
+    <div *ngFor="let question of quiz.questions" class="question">
+      <div class="question-header">
+        <h3>{{ question.question }}</h3>
+        <div class="question-actions">
+          <a [routerLink]="['/quizzes', quiz.quizzId, 'editquestion', question.questionId]" class="edit-icon">
+            <i class="material-icons">edit</i>
+          </a>
+          <a (click)="deleteQuestion(question.questionId)" class="delete-icon">
+            <i class="material-icons">delete</i>
+          </a>
+        </div>
+      </div>
+      <div class="answers-section">
+        <h4>Odpowiedzi:</h4>
+        <div *ngFor="let answer of question.answers" class="answer" [class.correct-answer]="answer.isCorrect">
+          <div class="answer-content">
+            {{ answer.answer }}
+            <span *ngIf="answer.isCorrect" class="correct-marker">✓</span>
+            <div class="action-icons">
+              <a [routerLink]="['/quizzes', quiz.quizzId, 'questions', question.questionId, 'answers', answer.answerId, 'edit']"
+                class="edit-icon">
+                <i class="material-icons">edit</i>
+              </a>
+              <a (click)="deleteAnswer(question, answer)" class="delete-icon">
+                <i class="material-icons">delete</i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <a 
+          [routerLink]="['/quizzes', quiz.quizzId, 'questions', question.questionId, 'add-answer']" 
+          class="add-answer-button"
+        >
+          <i class="material-icons">add</i> Dodaj odpowiedź
+        </a>
+      </div>
+    </div>
+    
+    <div class="add-question-section">
+      <a 
+        [routerLink]="['/quizzes', quiz.quizzId, 'add-question']" 
+        class="add-question-button"
+      >
+        <i class="material-icons">add</i> Dodaj nowe pytanie
+      </a>
+    </div>
+  </div>
+</div>

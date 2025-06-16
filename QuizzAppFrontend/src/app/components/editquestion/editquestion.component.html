@@ -1,0 +1,18 @@
+<div class="edit-container">
+  <h2>EEdytuj pytanie</h2>
+  
+  <form *ngIf="!isLoading && !error" [formGroup]="questionForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label>Treść pytania</label>
+      <textarea formControlName="question" class="form-control"></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" [disabled]="!questionForm.valid">Zapisz</button>
+      <button type="button" (click)="onCancel()">Anuluj</button>
+    </div>
+  </form>
+
+  <div *ngIf="isLoading" class="loading">Ładowanie...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+</div>

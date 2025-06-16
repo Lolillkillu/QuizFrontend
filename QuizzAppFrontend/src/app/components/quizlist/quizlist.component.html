@@ -1,0 +1,96 @@
+<div class="quiz-list">
+  <div class="search-container">
+    <input 
+      type="text" 
+      [(ngModel)]="searchTerm" 
+      placeholder="Szukaj..." 
+      class="search-input"
+    >
+    <button class="sort-icon" (click)="toggleSortPanel()">
+      <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="sort-filter-panel" *ngIf="isSortPanelVisible">
+      <div class="panel-section">
+        <h4>Sortowanie</h4>
+        <div class="sort-option">
+          <input 
+            type="radio" 
+            id="title-asc" 
+            name="sort" 
+            value="title-asc" 
+            [checked]="tempSortBy === 'title-asc'"
+            (click)="tempSortBy = tempSortBy === 'title-asc' ? null : 'title-asc'"
+          >
+          <label for="title-asc">
+            <span class="checkmark"></span>
+            Alfabetycznie A-Z
+          </label>
+        </div>
+        <div class="sort-option">
+          <input 
+            type="radio" 
+            id="title-desc" 
+            name="sort" 
+            value="title-desc" 
+            [checked]="tempSortBy === 'title-desc'"
+            (click)="tempSortBy = tempSortBy === 'title-desc' ? null : 'title-desc'"
+          >
+          <label for="title-desc">
+            <span class="checkmark"></span>
+            Alfabetycznie Z-A
+          </label>
+        </div>
+        <div class="sort-option">
+          <input 
+            type="radio" 
+            id="id-desc" 
+            name="sort" 
+            value="id-desc" 
+            [checked]="tempSortBy === 'id-desc'"
+            (click)="tempSortBy = tempSortBy === 'id-desc' ? null : 'id-desc'"
+          >
+          <label for="id-desc">
+            <span class="checkmark"></span>
+            Od najnowszych
+          </label>
+        </div>
+        <div class="sort-option">
+          <input 
+            type="radio" 
+            id="id-asc" 
+            name="sort" 
+            value="id-asc" 
+            [checked]="tempSortBy === 'id-asc'"
+            (click)="tempSortBy = tempSortBy === 'id-asc' ? null : 'id-asc'"
+          >
+          <label for="id-asc">
+            <span class="checkmark"></span>
+            Od najstarszych
+          </label>
+        </div>
+      </div>
+      
+      <div class="panel-section">
+        <h4>Filtrowanie</h4>
+        <p class="muted">TODO...</p>
+      </div>
+
+      <div class="panel-actions">
+        <button class="btn reset" (click)="resetSort()">Resetuj</button>
+        <button class="btn apply" (click)="applySort()">Zastosuj</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngFor="let quiz of filteredQuizzes" class="quiz-card" @cardAnimation>
+    <div class="quiz-content" [routerLink]="['/quizzes', quiz.quizzId]">
+      <h2>{{ quiz.title }}</h2>
+      <p *ngIf="quiz.description">{{ quiz.description }}</p>
+      <div class="meta-info">
+        <span>Autor: {{ quiz.author }}</span>
+      </div>
+    </div>
+    <button class="play-button" [routerLink]="['/quiz-game', quiz.quizzId]">Graj</button>
+  </div>
+</div>

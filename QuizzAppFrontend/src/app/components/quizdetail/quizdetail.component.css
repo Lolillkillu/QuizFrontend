@@ -1,0 +1,236 @@
+.quiz-details {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1rem;
+  }
+  
+  .author {
+    color: #546e7a;
+    font-style: italic;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+  }
+  
+  .description {
+    color: #37474f;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 1rem 0;
+  }
+  
+  .questions-section {
+    margin-top: 2rem;
+  }
+  
+  .questions-section h2 {
+    color: #1a237e;
+    border-bottom: 2px solid #3949ab;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .question {
+    background: #e3f2fd;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+  }
+  
+  .question:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: #bbdefb;
+  }
+  
+  .question h3 {
+    color: #0d47a1;
+    margin-bottom: 1rem;
+  }
+  
+  .answers-section {
+    margin-left: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .answers-section h4 {
+    color: #2e7d32;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+  
+  .answer {
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    background: #e8f5e9;
+    border: 2px solid #c8e6c9;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+  }
+  
+  .answer:hover {
+    transform: translateX(8px);
+    background: #c8e6c9;
+  }
+  
+  .correct-answer {
+    background: #c8e6c9 !important;
+    border-color: #4caf50 !important;
+  }
+  
+  .correct-marker {
+    color: #2e7d32;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+  
+  .loading, .error {
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.2rem;
+    animation: fadeInOut 1.5s infinite;
+  }
+  
+  .error {
+    color: #d32f2f;
+    background: #ffebee;
+    border-radius: 8px;
+    border: 1px solid #ffcdd2;
+  }
+
+  .question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .edit-icon {
+    color: #666;
+    cursor: pointer;
+    padding: 0.5rem;
+  }
+  
+  .edit-icon:hover {
+    color: #2196F3;
+  }
+  
+  .answer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .add-answer-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #2196F3;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-top: 0.5rem;
+    transition: background 0.3s ease;
+  }
+  
+  .add-answer-button:hover {
+    background: #1976D2;
+    color: white;
+  }
+
+  .add-question-section {
+    margin-top: 2rem;
+    padding: 1rem 0;
+    border-top: 2px solid #eee;
+  }
+  
+  .add-question-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: #4CAF50;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background 0.3s ease;
+  }
+  
+  .add-question-button:hover {
+    background: #388E3C;
+    color: white;
+  }
+
+  .action-icons {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
+  }
+  
+  .delete-icon {
+    color: #666;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+  
+  .delete-icon:hover {
+    color: #d32f2f;
+  }
+  
+  .answer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+.question-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.delete-icon {
+  color: #666;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.delete-icon:hover {
+  color: #d32f2f;
+}
+
+.quiz-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.quiz-header h1 {
+  margin: 0;
+}
+
+.delete-icon {
+  color: #666;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.delete-icon:hover {
+  color: #d32f2f;
+}
+
+
+  @keyframes fadeInOut {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+  }

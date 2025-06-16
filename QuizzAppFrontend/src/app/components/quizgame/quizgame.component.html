@@ -1,0 +1,65 @@
+<div class="quiz-game-container">
+  <div *ngIf="showModeSelection" class="mode-selection">
+    <h2>Wybierz tryb gry</h2>
+    <div class="mode-buttons">
+      <button class="mode-button solo" (click)="startSoloGame()">
+        1 gracz
+      </button>
+      <button class="mode-button multi" (click)="startMultiplayer()">
+        2 graczy
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!showModeSelection">
+    <div class="progress-bar">
+      <div 
+        *ngFor="let status of questionStatuses; let i = index"
+        class="progress-item"
+        [class.correct]="status === 'correct'"
+        [class.incorrect]="status === 'incorrect'"
+        [class.active]="i === currentQuestionIndex"
+        [class.unanswered]="status === 'unanswered'"
+      ></div>
+    </div>
+
+    <div *ngIf="questions.length > 0 && !quizFinished">
+      <div class="progress-counter">
+        Pytanie {{ currentQuestionIndex + 1 }} z {{ questions.length }}
+      </div>
+      
+      <h2>{{ questions[currentQuestionIndex].questionText }}</h2>
+      
+      <div class="answers-grid">
+        <div 
+          *ngFor="let answer of questions[currentQuestionIndex].answers.$values" 
+          class="answer-card"
+          [class.selected]="answer === selectedAnswer"
+          [class.correct]="isAnswerSelected && answer.isCorrect"
+          [class.incorrect]="isAnswerSelected && !answer.isCorrect && answer === selectedAnswer"
+          (click)="selectAnswer(answer)"
+        >
+          {{ answer.answerText }}
+        </div>
+      </div>
+
+      <div *ngIf="isAnswerSelected" class="result-message">
+        <button class="next-button" (click)="nextQuestion()">
+          {{ currentQuestionIndex < questions.length - 1 ? 'Następne pytanie' : 'Zobacz wynik' }}
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="quizFinished" class="quiz-summary">
+      <h2>Koniec gry</h2>
+      <div class="result-box" [class]="getResultClass()">
+        <p>Twój wynik: {{currentScore}}/{{questions.length}}</p>
+        <p class="result-message">{{getResultText()}}</p>
+      </div>
+    </div>
+
+    <div *ngIf="!questions.length && !quizFinished" class="loading">
+      Ładowanie pytań...
+    </div>
+  </div>
+</div>

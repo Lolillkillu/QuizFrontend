@@ -1,0 +1,8 @@
+{
+  "/gamehub": {
+    "target": "https://localhost:7039",
+    "secure": false,
+    "ws": true,
+    "logLevel": "debug"
+  }
+}

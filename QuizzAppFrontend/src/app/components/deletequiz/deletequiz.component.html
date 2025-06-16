@@ -1,0 +1,31 @@
+<div class="delete-container">
+    <h2>Usuń Quiz</h2>
+    <form [formGroup]="deleteForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="quizId">ID Quizu:</label>
+        <input 
+          type="number" 
+          id="quizId" 
+          formControlName="quizIdControl"
+          placeholder="Wprowadź ID quizu"
+        >
+      </div>
+      
+      <button 
+        type="submit" 
+        class="delete-button"
+        [disabled]="!quizIdControl?.value"
+      >
+        Usuń Quiz
+      </button>
+  
+      <div 
+        *ngIf="message" 
+        class="message"
+        [class.error]="isError"
+        [class.success]="!isError"
+      >
+        {{ message }}
+      </div>
+    </form>
+  </div>
