@@ -130,6 +130,32 @@
         <div class="game-link">{{ gameLink || 'Generowanie linku...' }}</div>
       </div>
       
+      <div *ngIf="isHost" class="settings-header">
+        <button (click)="toggleTimeSettings()" class="settings-button">
+          {{ showTimeSettings ? 'Ukryj ustawienia' : 'Pokaż ustawienia czasu' }}
+        </button>
+      </div>
+      
+      <div *ngIf="showTimeSettings" class="time-settings">
+        <div class="setting-row">
+          <label>Ograniczenie czasowe:</label>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="isTimeLimitEnabled">
+            <span class="switch-slider round"></span>
+          </label>
+          <span>{{ isTimeLimitEnabled ? 'On' : 'Off' }}</span>
+        </div>
+        
+        <div *ngIf="isTimeLimitEnabled" class="time-limit-slider">
+          <label>Czas na pytanie: {{ formatTime(timeLimit) }}</label>
+          <input type="range" min="5" max="60" [(ngModel)]="timeLimit" class="time-slider">
+          <div class="slider-labels">
+            <span>5s</span>
+            <span>60s</span>
+          </div>
+        </div>
+      </div>
+      
       <div class="players-list-container">
         <h3>Gracze w lobby ({{ players.length }}/2):</h3>
         <div class="players-list">
@@ -161,6 +187,15 @@
     </div>
 
     <div *ngIf="playerStatus === 'playing' && gameStatus === 'in-progress'">
+      <div *ngIf="isTimeLimitEnabled" class="timer-container">
+        <div class="timer">
+          <span [class.warning]="timeLeft <= getWarningThreshold()">{{ timeLeft }}s</span>
+        </div>
+        <div class="timer-progress">
+          <div class="progress-bar-inner" [style.width.%]="(timeLeft / timeLimit) * 100"></div>
+        </div>
+      </div>
+
       <div class="progress-bar">
         <div 
           *ngFor="let status of questionStatuses; let i = index"

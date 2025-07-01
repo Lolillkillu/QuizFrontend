@@ -4,11 +4,12 @@ import { SignalrService } from '../../services/signalr.service';
 import { QuizService } from '../../services/quiz.service';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-multiplayer-game',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './multiplayergame.component.html',
   styleUrls: ['./multiplayergame.component.css']
 })
@@ -38,6 +39,12 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   allPlayersReady = false;
   playerStatus: 'playing' | 'completed' = 'playing';
   expandedPlayers: { [playerId: string]: boolean } = {};
+  isTimeLimitEnabled = false;
+  timeLimit = 30;
+  timeLeft = this.timeLimit;
+  timer: any;
+  timerEndTime: number = 0;
+  showTimeSettings = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -182,6 +189,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         if (this.currentQuestionIndex === 0) {
           this.questionStatuses = Array(10).fill('unanswered');
         }
+
+        if (this.isTimeLimitEnabled && this.playerStatus === 'playing') {
+          this.startTimer();
+        }
       })
     );
 
@@ -254,6 +265,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
   selectAnswer(answer: any) {
     if (!this.isAnswerSelected && this.gameId && this.currentQuestion) {
+      this.stopTimer();
       this.selectedAnswer = answer;
       this.isAnswerSelected = true;
       this.signalrService.submitAnswer(
@@ -289,7 +301,61 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     this.expandedPlayers[playerId] = !this.expandedPlayers[playerId];
   }
 
+  startTimer() {
+    this.stopTimer();
+    this.timeLeft = this.timeLimit;
+    this.timerEndTime = Date.now() + this.timeLimit * 1000;
+    
+    this.timer = setInterval(() => {
+      const timeRemaining = Math.max(0, Math.floor((this.timerEndTime - Date.now()) / 1000));
+      
+      if (timeRemaining !== this.timeLeft) {
+        this.timeLeft = timeRemaining;
+      }
+      
+      if (this.timeLeft <= 0) {
+        this.stopTimer();
+        this.handleTimeExpired();
+      }
+    }, 50);
+  }
+
+  stopTimer() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  }
+
+  handleTimeExpired() {
+    if (!this.isAnswerSelected && this.gameId && this.currentQuestion) {
+      const incorrectAnswers = this.currentQuestion.answers.filter((a: any) => !a.isCorrect);
+      let answerToSubmit;
+      
+      if (incorrectAnswers.length > 0) {
+        answerToSubmit = incorrectAnswers[0];
+      } else {
+        answerToSubmit = this.currentQuestion.answers[0];
+      }
+      
+      this.selectAnswer(answerToSubmit);
+    }
+  }
+
+  toggleTimeSettings() {
+    this.showTimeSettings = !this.showTimeSettings;
+  }
+
+  getWarningThreshold(): number {
+    return Math.max(5, this.timeLimit / 3);
+  }
+
+  formatTime(seconds: number): string {
+    return `${seconds}s`;
+  }
+
   ngOnDestroy(): void {
+    this.stopTimer();
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 }
