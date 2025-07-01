@@ -2,7 +2,7 @@
   <div *ngIf="showModeSelection" class="mode-selection">
     <h2>Wybierz tryb gry</h2>
     <div class="mode-buttons">
-      <button class="mode-button solo" (click)="startSoloGame()">
+      <button class="mode-button solo" (click)="onSoloGameClick()">
         1 gracz
       </button>
       <button class="mode-button multi" (click)="startMultiplayer()">
@@ -11,7 +11,40 @@
     </div>
   </div>
 
-  <div *ngIf="!showModeSelection">
+  <div *ngIf="showTimeLimitSetting" class="time-limit-setting">
+    <h2>Ustawienia trybu jednoosobowego</h2>
+    
+    <div class="setting-row">
+      <label>Ograniczenie czasowe:</label>
+      <label class="toggle-switch">
+        <input type="checkbox" [(ngModel)]="isTimeLimitEnabled">
+        <span class="switch-slider round"></span>
+      </label>
+      <span>{{ isTimeLimitEnabled ? 'On' : 'Off' }}</span>
+    </div>
+    
+    <div *ngIf="isTimeLimitEnabled" class="time-limit-slider">
+      <label>Limit czasowy: {{ formatTime(timeLimit) }}</label>
+      <input type="range" min="5" max="60" [(ngModel)]="timeLimit" class="time-slider">
+      <div class="slider-labels">
+        <span>5s</span>
+        <span>60s</span>
+      </div>
+    </div>
+    
+    <button class="start-button" (click)="startSoloGame()">Rozpocznij grę</button>
+  </div>
+
+  <div *ngIf="!showModeSelection && !showTimeLimitSetting">
+    <div *ngIf="isTimeLimitEnabled && !quizFinished && questions.length > 0" class="timer-container">
+      <div class="timer">
+        <span [class.warning]="timeLeft <= getWarningThreshold()">{{ timeLeft }}s</span>
+      </div>
+      <div class="timer-progress">
+        <div class="progress-bar-inner" [style.width.%]="(timeLeft / timeLimit) * 100"></div>
+      </div>
+    </div>
+
     <div class="progress-bar">
       <div 
         *ngFor="let status of questionStatuses; let i = index"
@@ -56,6 +89,7 @@
         <p>Twój wynik: {{currentScore}}/{{questions.length}}</p>
         <p class="result-message">{{getResultText()}}</p>
       </div>
+      <button class="restart-button" (click)="restartQuiz()">Zagraj ponownie</button>
     </div>
 
     <div *ngIf="!questions.length && !quizFinished" class="loading">

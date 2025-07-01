@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { QuizService } from '../../services/quiz.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 
 interface AnswerDto {
   $id: string;
@@ -24,11 +25,11 @@ interface QuestionWithAnswers {
 @Component({
   selector: 'app-quiz-game',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule, HttpClientModule, FormsModule],
   templateUrl: './quizgame.component.html',
   styleUrls: ['./quizgame.component.css']
 })
-export class QuizGameComponent implements OnInit {
+export class QuizGameComponent implements OnInit, OnDestroy {
   questions: QuestionWithAnswers[] = [];
   currentQuestionIndex: number = 0;
   selectedAnswer: AnswerDto | null = null;
@@ -36,8 +37,14 @@ export class QuizGameComponent implements OnInit {
   quizId!: number;
   quizFinished = false;
   questionStatuses: Array<'unanswered' | 'correct' | 'incorrect'> = [];
-  currentScore: number = 0
+  currentScore: number = 0;
   showModeSelection = true;
+  showTimeLimitSetting = false;
+  isTimeLimitEnabled = false;
+  timeLimit = 30;
+  timeLeft = this.timeLimit;
+  timer: any;
+  timerEndTime: number = 0;
 
   constructor(
     private quizService: QuizService,
@@ -49,8 +56,18 @@ export class QuizGameComponent implements OnInit {
     this.quizId = Number(this.route.snapshot.paramMap.get('quizId'));
   }
 
-  startSoloGame() {
+  ngOnDestroy() {
+    this.stopTimer();
+  }
+
+  onSoloGameClick() {
     this.showModeSelection = false;
+    this.showTimeLimitSetting = true;
+  }
+
+  startSoloGame() {
+    this.showTimeLimitSetting = false;
+    this.timeLeft = this.timeLimit;
     this.loadQuestions();
   }
 
@@ -62,23 +79,31 @@ export class QuizGameComponent implements OnInit {
 
   restartQuiz() {
     this.showModeSelection = true;
+    this.showTimeLimitSetting = false;
     this.quizFinished = false;
     this.currentScore = 0;
     this.currentQuestionIndex = 0;
     this.questions = [];
     this.questionStatuses = [];
+    this.isTimeLimitEnabled = false;
+    this.timeLimit = 30;
+    this.stopTimer();
   }
 
-loadQuestions() {
-  this.quizService.getRandomQuestions(this.quizId).subscribe({
-    next: (response: any) => {
-      this.questions = response.$values.map((q: any) => this.mapQuestion(q));
-      this.questionStatuses = new Array(this.questions.length).fill('unanswered');
-      this.resetState();
-    },
-    error: (err) => console.error('Error:', err)
-  });
-}
+  loadQuestions() {
+    this.quizService.getRandomQuestions(this.quizId).subscribe({
+      next: (response: any) => {
+        this.questions = response.$values.map((q: any) => this.mapQuestion(q));
+        this.questionStatuses = new Array(this.questions.length).fill('unanswered');
+        this.resetState();
+        
+        if (this.isTimeLimitEnabled) {
+          this.startTimer();
+        }
+      },
+      error: (err) => console.error('Error:', err)
+    });
+  }
 
   private mapQuestion(question: any): QuestionWithAnswers {
     return {
@@ -98,21 +123,28 @@ loadQuestions() {
   }
 
   selectAnswer(answer: AnswerDto) {
-  if (!this.isAnswerSelected) {
-    this.selectedAnswer = answer;
-    this.isAnswerSelected = true;
+    if (!this.isAnswerSelected) {
+      this.stopTimer();
+      this.selectedAnswer = answer;
+      this.isAnswerSelected = true;
 
-    const newStatus = answer.isCorrect ? 'correct' : 'incorrect';
-    this.questionStatuses[this.currentQuestionIndex] = newStatus;
+      const newStatus = answer.isCorrect ? 'correct' : 'incorrect';
+      this.questionStatuses[this.currentQuestionIndex] = newStatus;
 
-    if (newStatus === 'correct') this.currentScore++;
+      if (newStatus === 'correct') this.currentScore++;
+    }
   }
-}
 
   nextQuestion() {
+    this.stopTimer();
+    
     if (this.currentQuestionIndex < this.questions.length - 1) {
       this.currentQuestionIndex++;
       this.resetState();
+      
+      if (this.isTimeLimitEnabled) {
+        this.startTimer();
+      }
     } else {
       this.quizFinished = true;
     }
@@ -121,25 +153,62 @@ loadQuestions() {
   resetState() {
     this.selectedAnswer = null;
     this.isAnswerSelected = false;
+    this.timeLeft = this.timeLimit;
   }
 
-  get answerStatusClass() {
-    if (!this.selectedAnswer) return '';
-    return this.selectedAnswer.isCorrect ? 'correct' : 'incorrect';
+  startTimer() {
+    this.timerEndTime = Date.now() + this.timeLimit * 1000;
+    
+    this.timer = setInterval(() => {
+      const timeRemaining = Math.max(0, Math.floor((this.timerEndTime - Date.now()) / 1000));
+      
+      if (timeRemaining !== this.timeLeft) {
+        this.timeLeft = timeRemaining;
+      }
+      
+      if (this.timeLeft <= 0) {
+        this.stopTimer();
+        this.handleTimeExpired();
+      }
+    }, 50);
+  }
+
+  stopTimer() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  }
+
+  handleTimeExpired() {
+    if (!this.isAnswerSelected) {
+      this.questionStatuses[this.currentQuestionIndex] = 'incorrect';
+      this.isAnswerSelected = true;
+
+      this.nextQuestion();
+    }
+  }
+
+  getWarningThreshold(): number {
+    return Math.max(5, this.timeLimit / 3);
   }
 
   getResultClass(): string {
-  const percentage = (this.currentScore / this.questions.length) * 100;
-  if (percentage >= 80) return 'good';
-  if (percentage >= 50) return 'average';
-  return 'poor';
-}
+    const percentage = (this.currentScore / this.questions.length) * 100;
+    if (percentage >= 80) return 'good';
+    if (percentage >= 50) return 'average';
+    return 'poor';
+  }
 
-getResultText(): string {
-  const percentage = (this.currentScore / this.questions.length) * 100;
-  if (percentage >= 90) return 'Gratulację';
-  if (percentage >= 70) return 'Nawet dobrze';
-  if (percentage >= 50) return 'Może być...';
-  return 'Tak średnio';
-}
+  getResultText(): string {
+    const percentage = (this.currentScore / this.questions.length) * 100;
+    if (percentage >= 90) return 'Gratulację';
+    if (percentage >= 70) return 'Nawet dobrze';
+    if (percentage >= 50) return 'Może być...';
+    return 'Tak średnio';
+  }
+
+  formatTime(seconds: number): string {
+    return `${seconds}s`;
+  }
 }
