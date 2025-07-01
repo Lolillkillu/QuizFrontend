@@ -22,6 +22,13 @@ interface QuestionWithAnswers {
   };
 }
 
+interface PlayerAnswer {
+  questionText: string;
+  playerAnswerText: string;
+  isCorrect: boolean;
+  correctAnswerText: string;
+}
+
 @Component({
   selector: 'app-quiz-game',
   standalone: true,
@@ -45,6 +52,8 @@ export class QuizGameComponent implements OnInit, OnDestroy {
   timeLeft = this.timeLimit;
   timer: any;
   timerEndTime: number = 0;
+  playerAnswers: PlayerAnswer[] = [];
+  showAnswersSummary = false;
 
   constructor(
     private quizService: QuizService,
@@ -87,6 +96,8 @@ export class QuizGameComponent implements OnInit, OnDestroy {
     this.questionStatuses = [];
     this.isTimeLimitEnabled = false;
     this.timeLimit = 30;
+    this.playerAnswers = [];
+    this.showAnswersSummary = false;
     this.stopTimer();
   }
 
@@ -132,6 +143,8 @@ export class QuizGameComponent implements OnInit, OnDestroy {
       this.questionStatuses[this.currentQuestionIndex] = newStatus;
 
       if (newStatus === 'correct') this.currentScore++;
+
+      this.recordPlayerAnswer(answer.answerText, answer.isCorrect);
     }
   }
 
@@ -182,11 +195,23 @@ export class QuizGameComponent implements OnInit, OnDestroy {
 
   handleTimeExpired() {
     if (!this.isAnswerSelected) {
+      this.recordPlayerAnswer('Brak odpowiedzi', false);
+      
       this.questionStatuses[this.currentQuestionIndex] = 'incorrect';
       this.isAnswerSelected = true;
-
-      this.nextQuestion();
     }
+  }
+
+  private recordPlayerAnswer(answerText: string, isCorrect: boolean) {
+    const currentQuestion = this.questions[this.currentQuestionIndex];
+    const correctAnswer = currentQuestion.answers.$values.find(a => a.isCorrect);
+    
+    this.playerAnswers.push({
+      questionText: currentQuestion.questionText,
+      playerAnswerText: answerText,
+      isCorrect: isCorrect,
+      correctAnswerText: correctAnswer ? correctAnswer.answerText : 'Brak poprawnej odpowiedzi'
+    });
   }
 
   getWarningThreshold(): number {

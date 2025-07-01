@@ -89,6 +89,33 @@
         <p>Twój wynik: {{currentScore}}/{{questions.length}}</p>
         <p class="result-message">{{getResultText()}}</p>
       </div>
+      
+      <button class="toggle-summary" (click)="showAnswersSummary = !showAnswersSummary">
+        {{ showAnswersSummary ? 'Ukryj' : 'Pokaż' }} szczegóły odpowiedzi
+      </button>
+      
+      <div *ngIf="showAnswersSummary" class="answers-summary">
+        <h3>Twoje odpowiedzi:</h3>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Pytanie</th>
+              <th>Twoja odpowiedź</th>
+              <th>Poprawna odpowiedź</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let answer of playerAnswers; let i = index" 
+                [class.correct]="answer.isCorrect"
+                [class.incorrect]="!answer.isCorrect">
+              <td>{{ i+1 }}. {{ answer.questionText }}</td>
+              <td>{{ answer.playerAnswerText }}</td>
+              <td>{{ answer.correctAnswerText }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <button class="restart-button" (click)="restartQuiz()">Zagraj ponownie</button>
     </div>
 
