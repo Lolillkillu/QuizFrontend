@@ -592,3 +592,75 @@ input:checked + .switch-slider:before {
 .switch-slider.round:before {
   border-radius: 50%;
 }
+
+.results-table tr.no-answer {
+    background-color: #e9ecef;
+    color: #6c757d;
+}
+
+.player-answers .no-answer {
+    font-style: italic;
+    color: #6c757d;
+}
+
+.timer-container {
+    margin: 15px 0;
+    text-align: center;
+}
+
+.timer {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.timer.warning {
+    color: #dc3545;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.timer-progress {
+    height: 10px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-bar-inner {
+    height: 100%;
+    background-color: #28a745;
+    transition: width 0.3s;
+}
+
+.settings-button {
+    margin: 10px 0;
+    padding: 8px 15px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.time-settings {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.time-limit-slider {
+    margin-top: 15px;
+}

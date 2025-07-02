@@ -95,7 +95,7 @@ export class SignalrService {
     return this.hubConnection.invoke('JoinGame', gameId, playerName, isHost);
   }
 
-  public submitAnswer(gameId: string, questionId: number, answerId: number): void {
+  public submitAnswer(gameId: string, questionId: number, answerId: number | null): void {
     this.hubConnection.send('SubmitAnswer', gameId, questionId, answerId);
   }
 
@@ -106,4 +106,9 @@ export class SignalrService {
   public sendPlayerReady(gameId: string): Promise<void> {
     return this.hubConnection.invoke('PlayerReady', gameId);
   }
+
+  public setTimeSettings(gameId: string, isTimeLimitEnabled: boolean, timeLimitPerQuestion: number): Promise<void> {
+    return this.hubConnection.invoke('SetTimeSettings', gameId, isTimeLimitEnabled, timeLimitPerQuestion);
+  }
+
 }

@@ -190,6 +190,9 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
           this.questionStatuses = Array(10).fill('unanswered');
         }
 
+        this.isTimeLimitEnabled = question.isTimeLimitEnabled;
+        this.timeLimit = question.timeLimitPerQuestion || 30;
+
         if (this.isTimeLimitEnabled && this.playerStatus === 'playing') {
           this.startTimer();
         }
@@ -250,8 +253,25 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
   markPlayerReady() {
     if (!this.gameId) return;
-    this.isPlayerReady = true;
-    this.signalrService.sendPlayerReady(this.gameId);
+
+    if (this.isHost) {
+      this.signalrService.setTimeSettings(this.gameId, this.isTimeLimitEnabled, this.timeLimit)
+        .then(() => {
+          this.isPlayerReady = true;
+          if (this.gameId) {
+            this.signalrService.sendPlayerReady(this.gameId);
+          }
+        })
+        .catch(err => {
+          this.errorMessage = 'Błąd ustawiania limitu czasu';
+          console.error(err);
+        });
+    } else {
+      this.isPlayerReady = true;
+      if (this.gameId) {
+        this.signalrService.sendPlayerReady(this.gameId);
+      }
+    }
   }
 
   getConnectionStatusText(): string {
@@ -272,6 +292,18 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.gameId,
         this.currentQuestion.questionId,
         answer.answerId
+      );
+    }
+  }
+
+  submitNoAnswer() {
+    if (!this.isAnswerSelected && this.gameId && this.currentQuestion) {
+      this.stopTimer();
+      this.isAnswerSelected = true;
+      this.signalrService.submitAnswer(
+        this.gameId,
+        this.currentQuestion.questionId,
+        null
       );
     }
   }
@@ -328,18 +360,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   handleTimeExpired() {
-    if (!this.isAnswerSelected && this.gameId && this.currentQuestion) {
-      const incorrectAnswers = this.currentQuestion.answers.filter((a: any) => !a.isCorrect);
-      let answerToSubmit;
-      
-      if (incorrectAnswers.length > 0) {
-        answerToSubmit = incorrectAnswers[0];
-      } else {
-        answerToSubmit = this.currentQuestion.answers[0];
-      }
-      
-      this.selectAnswer(answerToSubmit);
-    }
+    this.submitNoAnswer();
   }
 
   toggleTimeSettings() {
