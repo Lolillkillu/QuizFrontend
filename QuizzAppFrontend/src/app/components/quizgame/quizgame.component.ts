@@ -54,6 +54,11 @@ export class QuizGameComponent implements OnInit, OnDestroy {
   timerEndTime: number = 0;
   playerAnswers: PlayerAnswer[] = [];
   showAnswersSummary = false;
+  isMultiChoiceEnabled = false;
+  numberOfTiles = 10;
+  answersPerQuestion = 4;
+  selectedAnswers: AnswerDto[] = [];
+  isAnswerSubmitted = false;
 
   constructor(
     private quizService: QuizService,
@@ -98,22 +103,40 @@ export class QuizGameComponent implements OnInit, OnDestroy {
     this.timeLimit = 30;
     this.playerAnswers = [];
     this.showAnswersSummary = false;
+    this.isMultiChoiceEnabled = false;
+    this.numberOfTiles = 10;
+    this.answersPerQuestion = 4;
+    this.selectedAnswers = [];
+    this.isAnswerSubmitted = false;
     this.stopTimer();
   }
 
   loadQuestions() {
-    this.quizService.getRandomQuestions(this.quizId).subscribe({
-      next: (response: any) => {
-        this.questions = response.$values.map((q: any) => this.mapQuestion(q));
-        this.questionStatuses = new Array(this.questions.length).fill('unanswered');
-        this.resetState();
-        
-        if (this.isTimeLimitEnabled) {
-          this.startTimer();
-        }
-      },
-      error: (err) => console.error('Error:', err)
-    });
+    if (this.isMultiChoiceEnabled) {
+      this.quizService.getRandomMultiQuestions(
+        this.quizId,
+        this.numberOfTiles,
+        this.answersPerQuestion
+      ).subscribe({
+        next: (response: any) => {
+          this.questions = response.$values.map((q: any) => this.mapQuestion(q));
+          this.questionStatuses = new Array(this.questions.length).fill('unanswered');
+          this.resetState();
+          if (this.isTimeLimitEnabled) this.startTimer();
+        },
+        error: (err) => console.error('Error:', err)
+      });
+    } else {
+      this.quizService.getRandomQuestions(this.quizId).subscribe({
+        next: (response: any) => {
+          this.questions = response.$values.map((q: any) => this.mapQuestion(q));
+          this.questionStatuses = new Array(this.questions.length).fill('unanswered');
+          this.resetState();
+          if (this.isTimeLimitEnabled) this.startTimer();
+        },
+        error: (err) => console.error('Error:', err)
+      });
+    }
   }
 
   private mapQuestion(question: any): QuestionWithAnswers {
@@ -148,6 +171,72 @@ export class QuizGameComponent implements OnInit, OnDestroy {
     }
   }
 
+  toggleAnswer(answer: AnswerDto) {
+    if (!this.isAnswerSelected && !this.isAnswerSubmitted) {
+      const index = this.selectedAnswers.findIndex(a => a.answerId === answer.answerId);
+      if (index !== -1) {
+        this.selectedAnswers.splice(index, 1);
+      } else {
+        this.selectedAnswers.push(answer);
+      }
+    }
+  }
+
+  isSelected(answer: AnswerDto): boolean {
+    return this.selectedAnswers.some(a => a.answerId === answer.answerId);
+  }
+
+  submitMultiChoiceAnswers() {
+    if (this.isAnswerSubmitted || this.isAnswerSelected) {
+      return;
+    }
+
+    this.stopTimer();
+    this.isAnswerSelected = true;
+    this.isAnswerSubmitted = true;
+
+    const currentQuestion = this.questions[this.currentQuestionIndex];
+    const correctAnswers = currentQuestion.answers.$values.filter(a => a.isCorrect);
+    
+    const allCorrectSelected = correctAnswers.every(ca => 
+      this.selectedAnswers.some(sa => sa.answerId === ca.answerId)
+    );
+    
+    const noIncorrectSelected = this.selectedAnswers.every(sa => 
+      correctAnswers.some(ca => ca.answerId === sa.answerId)
+    );
+
+    const isCorrect = allCorrectSelected && noIncorrectSelected;
+
+    if (isCorrect) {
+      this.questionStatuses[this.currentQuestionIndex] = 'correct';
+      this.currentScore++;
+    } else {
+      this.questionStatuses[this.currentQuestionIndex] = 'incorrect';
+    }
+
+    if (!this.playerAnswers.some(pa => pa.questionText === currentQuestion.questionText)) {
+      this.recordPlayerAnswerForMultiChoice();
+    }
+  }
+
+  private recordPlayerAnswerForMultiChoice() {
+    const currentQuestion = this.questions[this.currentQuestionIndex];
+    const correctAnswers = currentQuestion.answers.$values
+      .filter(a => a.isCorrect)
+      .map(a => a.answerText);
+
+    const playerAnswerText = this.selectedAnswers.map(a => a.answerText).join(', ');
+    const correctAnswerText = correctAnswers.join(', ');
+
+    this.playerAnswers.push({
+      questionText: currentQuestion.questionText,
+      playerAnswerText,
+      isCorrect: this.questionStatuses[this.currentQuestionIndex] === 'correct',
+      correctAnswerText
+    });
+  }
+
   nextQuestion() {
     this.stopTimer();
     
@@ -165,7 +254,9 @@ export class QuizGameComponent implements OnInit, OnDestroy {
 
   resetState() {
     this.selectedAnswer = null;
+    this.selectedAnswers = [];
     this.isAnswerSelected = false;
+    this.isAnswerSubmitted = false;
     this.timeLeft = this.timeLimit;
   }
 
@@ -195,10 +286,13 @@ export class QuizGameComponent implements OnInit, OnDestroy {
 
   handleTimeExpired() {
     if (!this.isAnswerSelected) {
-      this.recordPlayerAnswer('Brak odpowiedzi', false);
-      
-      this.questionStatuses[this.currentQuestionIndex] = 'incorrect';
-      this.isAnswerSelected = true;
+      if (this.isMultiChoiceEnabled && this.selectedAnswers.length > 0) {
+        this.submitMultiChoiceAnswers();
+      } else {
+        this.recordPlayerAnswer('Brak odpowiedzi', false);
+        this.questionStatuses[this.currentQuestionIndex] = 'incorrect';
+        this.isAnswerSelected = true;
+      }
     }
   }
 

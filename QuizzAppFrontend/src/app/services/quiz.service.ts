@@ -76,4 +76,13 @@ deleteQuestion(questionId: number): Observable<void> {
 getRandomQuestions(quizId: number): Observable<any> {
   return this.http.get<any>(`${this.apiUrl}/GetRandomQuestions/${quizId}`);
 }
+
+getRandomMultiQuestions(
+  quizId: number, 
+  numberOfQuestions: number, 
+  answersPerQuestion: number
+): Observable<any> {
+  const url = `${this.apiUrl}/GetRandomMultiQuestions/${quizId}?numberOfQuestions=${numberOfQuestions}&answersPerQuestion=${answersPerQuestion}`;
+  return this.http.get<any>(url);
+}
 }

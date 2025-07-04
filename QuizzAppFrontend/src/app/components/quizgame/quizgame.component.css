@@ -421,3 +421,48 @@ input:checked + .switch-slider:before {
   font-weight: bold;
   margin-top: 10px;
 }
+
+.multi-choice-controls {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+.submit-button {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #0b7dda;
+}
+
+.submit-button:disabled {
+  background-color: #b0b0b0;
+  cursor: not-allowed;
+}
+
+.checkmark {
+  float: right;
+  font-weight: bold;
+  color: #2196F3;
+}
+
+.answers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.submit-button:disabled {
+  background-color: #666 !important;
+  cursor: not-allowed;
+  opacity: 0.9;
+}
