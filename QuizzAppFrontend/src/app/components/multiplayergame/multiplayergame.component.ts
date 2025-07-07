@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SignalrService } from '../../services/signalr.service';
+import { GameMode, SignalrService } from '../../services/signalr.service';
 import { QuizService } from '../../services/quiz.service';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -45,6 +45,11 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   timer: any;
   timerEndTime: number = 0;
   showTimeSettings = false;
+  isMultiChoiceEnabled = false;
+  numberOfTiles = 10;
+  answersPerQuestion = 4;
+  selectedAnswers: any[] = [];
+  isAnswerSubmitted = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -79,6 +84,8 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.connectionStatus = status;
       })
     );
+
+    this.setupSignalrSubscriptions();
   }
 
   private updateViewState() {
@@ -138,8 +145,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
     this.playerName = playerName;
 
-    this.setupSignalrSubscriptions();
-
     this.signalrService.joinGame(this.gameId, playerName, this.isHost)
       .then(playerId => {
         this.playerId = playerId;
@@ -179,8 +184,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       this.signalrService.nextQuestion$.subscribe(question => {
         this.currentQuestion = question;
         this.gameStatus = 'in-progress';
-        this.selectedAnswer = null;
-        this.isAnswerSelected = false;
+        this.resetState();
         this.isPlayerReady = false;
         this.playerStatus = 'playing';
         
@@ -192,6 +196,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
         this.isTimeLimitEnabled = question.isTimeLimitEnabled;
         this.timeLimit = question.timeLimitPerQuestion || 30;
+        this.isMultiChoiceEnabled = question.isMultiChoice;
 
         if (this.isTimeLimitEnabled && this.playerStatus === 'playing') {
           this.startTimer();
@@ -243,6 +248,12 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.checkAllPlayersReady();
       })
     );
+
+    this.subscriptions.push(
+      this.signalrService.gameModeUpdated$.subscribe((mode: GameMode) => {
+        this.isMultiChoiceEnabled = (mode === GameMode.MultipleChoice);
+      })
+    );
   }
 
   private checkAllPlayersReady() {
@@ -251,28 +262,32 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     }
   }
 
-  markPlayerReady() {
-    if (!this.gameId) return;
+markPlayerReady() {
+  if (!this.gameId) return;
 
-    if (this.isHost) {
-      this.signalrService.setTimeSettings(this.gameId, this.isTimeLimitEnabled, this.timeLimit)
-        .then(() => {
-          this.isPlayerReady = true;
-          if (this.gameId) {
-            this.signalrService.sendPlayerReady(this.gameId);
-          }
-        })
-        .catch(err => {
-          this.errorMessage = 'Błąd ustawiania limitu czasu';
-          console.error(err);
-        });
-    } else {
-      this.isPlayerReady = true;
-      if (this.gameId) {
-        this.signalrService.sendPlayerReady(this.gameId);
-      }
+  if (this.isHost) {
+    this.signalrService.setGameMode(this.gameId!, 
+      this.isMultiChoiceEnabled ? GameMode.MultipleChoice : GameMode.SingleChoice)
+      .then(() => {
+        return this.signalrService.setTimeSettings(this.gameId!, this.isTimeLimitEnabled, this.timeLimit);
+      })
+      .then(() => {
+        this.isPlayerReady = true;
+        if (this.gameId) {
+          this.signalrService.sendPlayerReady(this.gameId);
+        }
+      })
+      .catch(err => {
+        this.errorMessage = 'Błąd limitu czasu';
+        console.error(err);
+      });
+  } else {
+    this.isPlayerReady = true;
+    if (this.gameId) {
+      this.signalrService.sendPlayerReady(this.gameId);
     }
   }
+}
 
   getConnectionStatusText(): string {
     switch (this.connectionStatus) {
@@ -294,6 +309,38 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         answer.answerId
       );
     }
+  }
+
+  toggleAnswer(answer: any) {
+    if (!this.isAnswerSelected && !this.isAnswerSubmitted) {
+      const index = this.selectedAnswers.findIndex(a => a.answerId === answer.answerId);
+      if (index !== -1) {
+        this.selectedAnswers.splice(index, 1);
+      } else {
+        this.selectedAnswers.push(answer);
+      }
+    }
+  }
+
+  isSelected(answer: any): boolean {
+    return this.selectedAnswers.some(a => a.answerId === answer.answerId);
+  }
+
+  submitMultiChoiceAnswers() {
+    if (this.isAnswerSubmitted || this.isAnswerSelected) {
+      return;
+    }
+
+    this.stopTimer();
+    this.isAnswerSelected = true;
+    this.isAnswerSubmitted = true;
+    
+    const answerIds = this.selectedAnswers.map(a => a.answerId);
+    this.signalrService.submitMultiAnswer(
+      this.gameId!,
+      this.currentQuestion.questionId,
+      answerIds
+    );
   }
 
   submitNoAnswer() {
@@ -373,6 +420,14 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
   formatTime(seconds: number): string {
     return `${seconds}s`;
+  }
+
+  resetState() {
+    this.selectedAnswer = null;
+    this.selectedAnswers = [];
+    this.isAnswerSelected = false;
+    this.isAnswerSubmitted = false;
+    this.timeLeft = this.timeLimit;
   }
 
   ngOnDestroy(): void {

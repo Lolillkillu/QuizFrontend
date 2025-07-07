@@ -154,6 +154,24 @@
             <span>60s</span>
           </div>
         </div>
+        
+        <div class="setting-row">
+          <label>Tryb wielokrotnego wyboru:</label>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="isMultiChoiceEnabled">
+            <span class="switch-slider round"></span>
+          </label>
+          <span>{{ isMultiChoiceEnabled ? 'On' : 'Off' }}</span>
+        </div>
+        
+        <div *ngIf="isMultiChoiceEnabled" class="setting-row">
+          <label>Liczba odpowiedzi na pytanie: {{ answersPerQuestion }}</label>
+          <input type="range" min="2" max="6" [(ngModel)]="answersPerQuestion" class="time-slider">
+          <div class="slider-labels">
+            <span>2</span>
+            <span>6</span>
+          </div>
+        </div>
       </div>
       
       <div class="players-list-container">
@@ -219,13 +237,25 @@
         <div 
           *ngFor="let answer of currentQuestion?.answers" 
           class="answer-card"
-          [class.selected]="answer === selectedAnswer"
+          [class.selected]="isMultiChoiceEnabled ? isSelected(answer) : answer === selectedAnswer"
           [class.correct]="isAnswerSelected && answer.isCorrect"
-          [class.incorrect]="isAnswerSelected && !answer.isCorrect && answer === selectedAnswer"
-          (click)="selectAnswer(answer)"
+          [class.incorrect]="isAnswerSelected && !answer.isCorrect && 
+            (isMultiChoiceEnabled ? isSelected(answer) : answer === selectedAnswer)"
+          (click)="isMultiChoiceEnabled ? toggleAnswer(answer) : selectAnswer(answer)"
         >
           {{ answer.answerText }}
+          <span *ngIf="isMultiChoiceEnabled && isSelected(answer)" class="checkmark">✓</span>
         </div>
+      </div>
+      
+      <div *ngIf="isMultiChoiceEnabled" class="multi-choice-controls">
+        <button 
+          class="submit-button" 
+          (click)="submitMultiChoiceAnswers()"
+          [disabled]="selectedAnswers.length === 0 || isAnswerSubmitted"
+        >
+          {{ isAnswerSubmitted ? 'Odpowiedź zatwierdzona' : 'Zatwierdź odpowiedzi' }}
+        </button>
       </div>
       
       <div *ngIf="isAnswerSelected" class="feedback-message">

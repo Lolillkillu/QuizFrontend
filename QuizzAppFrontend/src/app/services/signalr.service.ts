@@ -2,6 +2,11 @@ import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject, Subject } from 'rxjs';
 
+export enum GameMode {
+  SingleChoice = 0,
+  MultipleChoice = 1
+}
+
 @Injectable({ providedIn: 'root' })
 export class SignalrService {
   private hubConnection: signalR.HubConnection;
@@ -16,6 +21,7 @@ export class SignalrService {
   public quizIdSet$ = new Subject<void>();
   public playerReady$ = new Subject<string>();
   public playerCompleted$ = new Subject<string>();
+  public gameModeUpdated$ = new Subject<GameMode>();
 
   constructor() {
     this.hubConnection = new signalR.HubConnectionBuilder()
@@ -81,6 +87,10 @@ export class SignalrService {
     this.hubConnection.on('PlayerReady', (playerId: string) => {
         this.playerReady$.next(playerId);
     });
+
+    this.hubConnection.on('GameModeUpdated', (mode: GameMode) => {
+      this.gameModeUpdated$.next(mode);
+    });
   }
 
   public createGame(quizId: number): Promise<string> {
@@ -109,6 +119,14 @@ export class SignalrService {
 
   public setTimeSettings(gameId: string, isTimeLimitEnabled: boolean, timeLimitPerQuestion: number): Promise<void> {
     return this.hubConnection.invoke('SetTimeSettings', gameId, isTimeLimitEnabled, timeLimitPerQuestion);
+  }
+
+  public setGameMode(gameId: string, mode: GameMode): Promise<void> {
+    return this.hubConnection.invoke('SetGameMode', gameId, mode);
+  }
+
+  public submitMultiAnswer(gameId: string, questionId: number, answerIds: number[]): void {
+    this.hubConnection.send('SubmitMultiAnswer', gameId, questionId, answerIds);
   }
 
 }
