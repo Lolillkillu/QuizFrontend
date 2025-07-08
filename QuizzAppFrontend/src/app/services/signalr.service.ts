@@ -15,8 +15,8 @@ export class SignalrService {
   public gameCreated$ = new Subject<string>();
   public playerJoined$ = new Subject<any[]>();
   public nextQuestion$ = new Subject<any>();
-  public answerProcessed$ = new Subject<{playerId: string, isCorrect: boolean}>();
-  public gameCompleted$ = new Subject<any[]>();
+  public answerProcessed$ = new Subject<{ playerId: string, isCorrect: boolean }>();
+  public gameCompleted$ = new Subject<{players: any[], questions?: any[]}>();
   public gameError$ = new Subject<string>();
   public quizIdSet$ = new Subject<void>();
   public playerReady$ = new Subject<string>();
@@ -90,6 +90,13 @@ export class SignalrService {
 
     this.hubConnection.on('GameModeUpdated', (mode: GameMode) => {
       this.gameModeUpdated$.next(mode);
+    });
+
+    this.hubConnection.on('GameCompleted', (results: any) => {
+      this.gameCompleted$.next({
+        players: results.Players,
+        questions: results.Questions
+      });
     });
   }
 

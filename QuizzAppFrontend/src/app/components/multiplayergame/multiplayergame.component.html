@@ -307,8 +307,11 @@
                           {{ answer.answerTexts.length > 0 ? (answer.answerTexts.join(', ')) : 'Brak odpowiedzi' }}
                         </span>
                       </p>
-                      <p *ngIf="!answer.isCorrect" class="correct-answer">
-                        Poprawna odpowiedź: {{ getCorrectAnswerTexts(answer.questionId) }}
+                      <p class="correct-answer">
+                        Poprawne odpowiedzi: 
+                        <span *ngFor="let correct of answer.correctAnswers; let last = last">
+                          {{ correct.answerText }}{{ !last ? ', ' : '' }}
+                        </span>
                       </p>
                     </div>
                   </div>

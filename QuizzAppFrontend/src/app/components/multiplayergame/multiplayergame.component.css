@@ -698,23 +698,22 @@ input:checked + .switch-slider:before {
 }
 
 .player-answers .correct {
-  color: #28a745;
-  font-weight: bold;
+    color: #28a745;
 }
 
 .player-answers .incorrect {
-  color: #dc3545;
-  font-weight: bold;
+    color: #dc3545;
 }
 
 .player-answers .no-answer {
-  font-style: italic;
-  color: #6c757d;
+    font-style: italic;
+    color: #6c757d;
 }
 
 .correct-answer {
-  color: #28a745;
-  margin-top: 5px;
+    color: #28a745;
+    font-weight: bold;
+    margin-top: 5px;
 }
 
 .answer-item {
@@ -725,4 +724,3 @@ input:checked + .switch-slider:before {
 .answer-item:last-child {
   border-bottom: none;
 }
-

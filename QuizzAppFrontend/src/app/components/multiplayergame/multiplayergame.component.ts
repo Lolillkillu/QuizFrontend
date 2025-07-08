@@ -51,6 +51,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   selectedAnswers: any[] = [];
   isAnswerSubmitted = false;
   gameQuestions: any[] = [];
+  correctAnswersMap: { [questionId: number]: any[] } = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -227,12 +228,23 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.gameStatus = 'completed';
         this.playerCompleted = true;
         this.playerStatus = 'completed';
-        this.players = results
+        
+        if (results.questions) {
+          results.questions.forEach((q: any) => {
+            this.correctAnswersMap[q.questionId] = q.correctAnswers;
+          });
+        }
+
+        this.players = results.players
           .map((r: any) => ({
             id: r.playerId,
             name: r.playerName || 'Anonim',
             score: r.score,
-            answers: r.answers || []
+            answers: r.answers.map((a: any) => ({
+              ...a,
+              correctAnswers: a.correctAnswers || 
+                (this.correctAnswersMap[a.questionId] || [])
+            })) || []
           }))
           .sort((a, b) => b.score - a.score);
       })
