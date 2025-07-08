@@ -50,6 +50,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   answersPerQuestion = 4;
   selectedAnswers: any[] = [];
   isAnswerSubmitted = false;
+  gameQuestions: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -194,6 +195,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
           this.questionStatuses = Array(10).fill('unanswered');
         }
 
+        if (!this.gameQuestions.some(q => q.questionId === question.questionId)) {
+          this.gameQuestions.push(question);
+        }
+
         this.isTimeLimitEnabled = question.isTimeLimitEnabled;
         this.timeLimit = question.timeLimitPerQuestion || 30;
         this.isMultiChoiceEnabled = question.isMultiChoice;
@@ -262,32 +267,32 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     }
   }
 
-markPlayerReady() {
-  if (!this.gameId) return;
+  markPlayerReady() {
+    if (!this.gameId) return;
 
-  if (this.isHost) {
-    this.signalrService.setGameMode(this.gameId!, 
-      this.isMultiChoiceEnabled ? GameMode.MultipleChoice : GameMode.SingleChoice)
-      .then(() => {
-        return this.signalrService.setTimeSettings(this.gameId!, this.isTimeLimitEnabled, this.timeLimit);
-      })
-      .then(() => {
-        this.isPlayerReady = true;
-        if (this.gameId) {
-          this.signalrService.sendPlayerReady(this.gameId);
-        }
-      })
-      .catch(err => {
-        this.errorMessage = 'Błąd limitu czasu';
-        console.error(err);
-      });
-  } else {
-    this.isPlayerReady = true;
-    if (this.gameId) {
-      this.signalrService.sendPlayerReady(this.gameId);
+    if (this.isHost) {
+      this.signalrService.setGameMode(this.gameId!, 
+        this.isMultiChoiceEnabled ? GameMode.MultipleChoice : GameMode.SingleChoice)
+        .then(() => {
+          return this.signalrService.setTimeSettings(this.gameId!, this.isTimeLimitEnabled, this.timeLimit);
+        })
+        .then(() => {
+          this.isPlayerReady = true;
+          if (this.gameId) {
+            this.signalrService.sendPlayerReady(this.gameId);
+          }
+        })
+        .catch(err => {
+          this.errorMessage = 'Błąd limitu czasu';
+          console.error(err);
+        });
+    } else {
+      this.isPlayerReady = true;
+      if (this.gameId) {
+        this.signalrService.sendPlayerReady(this.gameId);
+      }
     }
   }
-}
 
   getConnectionStatusText(): string {
     switch (this.connectionStatus) {
@@ -428,6 +433,14 @@ markPlayerReady() {
     this.isAnswerSelected = false;
     this.isAnswerSubmitted = false;
     this.timeLeft = this.timeLimit;
+  }
+
+  getCorrectAnswerTexts(questionId: number): string {
+    const question = this.gameQuestions.find(q => q.questionId === questionId);
+    if (!question) return '';
+
+    const correctAnswers = question.answers.filter((a: any) => a.isCorrect);
+    return correctAnswers.map((a: any) => a.answerText).join(', ');
   }
 
   ngOnDestroy(): void {

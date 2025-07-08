@@ -696,3 +696,33 @@ input:checked + .switch-slider:before {
   font-weight: bold;
   color: #2196F3;
 }
+
+.player-answers .correct {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.player-answers .incorrect {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.player-answers .no-answer {
+  font-style: italic;
+  color: #6c757d;
+}
+
+.correct-answer {
+  color: #28a745;
+  margin-top: 5px;
+}
+
+.answer-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.answer-item:last-child {
+  border-bottom: none;
+}
+

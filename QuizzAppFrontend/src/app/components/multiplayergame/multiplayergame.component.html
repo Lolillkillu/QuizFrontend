@@ -298,13 +298,17 @@
                   <div class="player-answers">
                     <h4>Odpowiedzi {{ player.name }}:</h4>
                     <div *ngFor="let answer of player.answers; let qi = index" class="answer-item">
-                      <p><strong>Pytanie {{ qi + 1 }}:</strong> 
+                      <p><strong>Pytanie {{ qi + 1 }}: {{ answer.questionText }}</strong></p>
+                      <p>
+                        Twoja odpowiedź: 
                         <span [class.correct]="answer.isCorrect" 
                               [class.incorrect]="!answer.isCorrect"
-                              [class.no-answer]="answer.answerId === null">
-                          {{ answer.answerId === null ? 'Brak odpowiedzi' : answer.answerText }}
-                          ({{ answer.isCorrect ? 'Poprawna' : 'Niepoprawna' }})
+                              [class.no-answer]="answer.answerTexts.length === 0">
+                          {{ answer.answerTexts.length > 0 ? (answer.answerTexts.join(', ')) : 'Brak odpowiedzi' }}
                         </span>
+                      </p>
+                      <p *ngIf="!answer.isCorrect" class="correct-answer">
+                        Poprawna odpowiedź: {{ getCorrectAnswerTexts(answer.questionId) }}
                       </p>
                     </div>
                   </div>
