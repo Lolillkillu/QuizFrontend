@@ -25,3 +25,10 @@ export interface AnswerDto {
   answerText: string;
   isCorrect: boolean;
 }
+
+export interface QuestionSearchResult {
+  questionId: number;
+  questionText: string;
+  quizzId: number;
+  quizzTitle: string;
+}

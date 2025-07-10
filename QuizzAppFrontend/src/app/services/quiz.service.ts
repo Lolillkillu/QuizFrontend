@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { forkJoin, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { QuestionWithAnswers, Quiz } from '../models/quiz.model';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { QuestionSearchResult, QuestionWithAnswers, Quiz } from '../models/quiz.model';
 import { CreateQuiz } from '../models/createquiz.model';
 import { Question } from '../models/question.model';
 import { Answer } from '../models/answer.model';
@@ -31,7 +31,7 @@ export class QuizService {
   deleteQuiz(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
-  
+
   getQuiz(id: number): Observable<Quiz> {
     return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
       map(quizzResponse => ({
@@ -47,13 +47,13 @@ export class QuizService {
   addAnswersToQuestion(questionId: number, answers: Partial<Answer>[]): Observable<any> {
     const url = `${this.apiUrl}/Question/${questionId}/Answer`;
 
-    const requests = answers.map(answer => 
+    const requests = answers.map(answer =>
       this.http.post<Answer>(url, {
         answer: answer.answer,
         isCorrect: answer.isCorrect
       })
     );
-    
+
     return forkJoin(requests);
   }
 
@@ -61,28 +61,39 @@ export class QuizService {
     return this.http.put(`${this.apiUrl}/Question/${questionId}`, question);
   }
 
-updateAnswer(answerId: number, answer: Answer): Observable<any> {
-  return this.http.put(`${this.apiUrl}/Answer/${answerId}`, answer);
-}
+  updateAnswer(answerId: number, answer: Answer): Observable<any> {
+    return this.http.put(`${this.apiUrl}/Answer/${answerId}`, answer);
+  }
 
-deleteAnswer(answerId: number): Observable<void> {
-  return this.http.delete<void>(`${this.apiUrl}/Answer/${answerId}`);
-}
+  deleteAnswer(answerId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/Answer/${answerId}`);
+  }
 
-deleteQuestion(questionId: number): Observable<void> {
-  return this.http.delete<void>(`${this.apiUrl}/Question/${questionId}`);
-}
+  deleteQuestion(questionId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/Question/${questionId}`);
+  }
 
-getRandomQuestions(quizId: number): Observable<any> {
-  return this.http.get<any>(`${this.apiUrl}/GetRandomQuestions/${quizId}`);
-}
+  getRandomQuestions(quizId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/GetRandomQuestions/${quizId}`);
+  }
 
-getRandomMultiQuestions(
-  quizId: number, 
-  numberOfQuestions: number, 
-  answersPerQuestion: number
-): Observable<any> {
-  const url = `${this.apiUrl}/GetRandomMultiQuestions/${quizId}?numberOfQuestions=${numberOfQuestions}&answersPerQuestion=${answersPerQuestion}`;
-  return this.http.get<any>(url);
-}
+  getRandomMultiQuestions(
+    quizId: number,
+    numberOfQuestions: number,
+    answersPerQuestion: number
+  ): Observable<any> {
+    const url = `${this.apiUrl}/GetRandomMultiQuestions/${quizId}?numberOfQuestions=${numberOfQuestions}&answersPerQuestion=${answersPerQuestion}`;
+    return this.http.get<any>(url);
+  }
+
+  searchQuestions(searchTerm: string): Observable<QuestionSearchResult[]> {
+    if (!searchTerm || searchTerm.trim().length < 3) {
+      return of([]);
+    }
+
+    const url = `${this.apiUrl}/SearchQuestions?searchTerm=${encodeURIComponent(searchTerm)}`;
+    return this.http.get<QuestionSearchResult[]>(url).pipe(
+      catchError(() => of([]))
+    );
+  }
 }

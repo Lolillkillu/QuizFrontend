@@ -1,32 +1,75 @@
 <div class="question-container">
-    <h2>Dodaj nowe pytanie do quizu</h2>
-    <form [formGroup]="questionForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="questionText">Treść pytania:</label>
-        <textarea 
-          id="questionText" 
-          formControlName="questionText"
-          class="form-control"
-          rows="4"
-        ></textarea>
-        
-        <div *ngIf="questionForm.get('questionText')?.invalid && questionForm.get('questionText')?.touched" 
-             class="error-message">
-          <div *ngIf="questionForm.get('questionText')?.hasError('required')">
-            Pole jest wymagane
-          </div>
-          <div *ngIf="questionForm.get('questionText')?.hasError('minlength')">
-            Pytanie musi mieć przynajmniej 5 znaków
-          </div>
+  <h2>Dodaj nowe pytanie do quizu</h2>
+  <form [formGroup]="questionForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="questionText">Treść pytania:</label>
+      <textarea 
+        id="questionText" 
+        formControlName="questionText"
+        class="form-control"
+        rows="4"
+        placeholder="Wpisz treść nowego pytania..."
+      ></textarea>
+      
+      <div *ngIf="questionForm.get('questionText')?.invalid && questionForm.get('questionText')?.touched" 
+           class="error-message">
+        <div *ngIf="questionForm.get('questionText')?.hasError('required')">
+          Pole jest wymagane
+        </div>
+        <div *ngIf="questionForm.get('questionText')?.hasError('minlength')">
+          Pytanie musi mieć przynajmniej 5 znaków
         </div>
       </div>
-  
-      <button 
-        type="submit" 
-        class="submit-btn"
-        [disabled]="questionForm.invalid"
+    </div>
+
+    <div class="form-group">
+      <label for="searchQuestions">Wyszukaj pytanie:</label>
+      <input 
+        type="text" 
+        id="searchQuestions" 
+        [formControl]="searchControl" 
+        class="form-control" 
+        placeholder="Wpisz min. 3 znaki..."
       >
-        Dodaj pytanie
-      </button>
-    </form>
-  </div>
+      
+      <div *ngIf="searchControl.value && searchControl.value.length > 0 && searchControl.value.length < 3" 
+           class="search-hint">
+        Wpisz conajmniej 3 znaki...
+      </div>
+    </div>
+
+    <div *ngIf="searchControl.value && searchControl.value.length >= 3" class="search-results">
+      <h3>Wyniki wyszukiwania dla: "{{ searchControl.value }}"</h3>
+      
+      <div *ngIf="quizTitles.length === 0" class="no-results">
+        Brak dopasowanych pytań
+      </div>
+
+      <div *ngIf="quizTitles.length > 0">
+        <div *ngFor="let title of quizTitles" class="quiz-group">
+          <h4>Quiz: {{ title }}</h4>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Pytanie</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let question of groupedResults[title]">
+                <td>{{ question.questionText }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <button 
+      type="submit" 
+      class="submit-btn"
+      [disabled]="questionForm.invalid"
+    >
+      Dodaj pytanie
+    </button>
+  </form>
+</div>
