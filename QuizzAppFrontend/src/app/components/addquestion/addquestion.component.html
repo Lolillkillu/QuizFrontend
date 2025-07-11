@@ -41,25 +41,38 @@
     <div *ngIf="searchControl.value && searchControl.value.length >= 3" class="search-results">
       <h3>Wyniki wyszukiwania dla: "{{ searchControl.value }}"</h3>
       
-      <div *ngIf="quizTitles.length === 0" class="no-results">
-        Brak dopasowanych pytań
+      <div *ngIf="isLoading" class="loading-indicator">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Ładowanie...</span>
+        </div>
+        <span>Wyszukiwanie pytań...</span>
       </div>
+      
+      <div *ngIf="!isLoading && searchError" class="error-message">
+        Wystąpił błąd podczas wyszukiwania. Spróbuj ponownie
+      </div>
+      
+      <div *ngIf="!isLoading && !searchError">
+        <div *ngIf="searchResults.length === 0" class="no-results">
+          Brak dopasowanych pytań
+        </div>
 
-      <div *ngIf="quizTitles.length > 0">
-        <div *ngFor="let title of quizTitles" class="quiz-group">
-          <h4>Quiz: {{ title }}</h4>
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th>Pytanie</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let question of groupedResults[title]">
-                <td>{{ question.questionText }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div *ngIf="searchResults.length > 0">
+          <div *ngFor="let title of quizTitles" class="quiz-group">
+            <h4>Quiz: {{ title }}</h4>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Pytanie</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let question of groupedResults[title]">
+                  <td>{{ question.questionText }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

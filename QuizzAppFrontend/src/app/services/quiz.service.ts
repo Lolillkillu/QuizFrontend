@@ -87,13 +87,33 @@ export class QuizService {
   }
 
   searchQuestions(searchTerm: string): Observable<QuestionSearchResult[]> {
-    if (!searchTerm || searchTerm.trim().length < 3) {
-      return of([]);
-    }
-
-    const url = `${this.apiUrl}/SearchQuestions?searchTerm=${encodeURIComponent(searchTerm)}`;
-    return this.http.get<QuestionSearchResult[]>(url).pipe(
-      catchError(() => of([]))
-    );
+  if (!searchTerm || searchTerm.trim().length < 3) {
+    return of([]);
   }
+
+  const url = `${this.apiUrl}/SearchQuestions?searchTerm=${encodeURIComponent(searchTerm)}`;
+  
+  return this.http.get<any>(url).pipe(
+    map(response => {
+      if (response && response.$values && Array.isArray(response.$values)) {
+        return response.$values.map((item: any) => ({
+          questionId: item.questionId || item.QuestionId,
+          questionText: item.questionText || item.QuestionText,
+          quizzId: item.quizzId || item.QuizzId,
+          quizzTitle: item.quizzTitle || item.QuizzTitle
+        }));
+      }
+      else if (Array.isArray(response)) {
+        return response.map(item => ({
+          questionId: item.questionId || item.QuestionId,
+          questionText: item.questionText || item.QuestionText,
+          quizzId: item.quizzId || item.QuizzId,
+          quizzTitle: item.quizzTitle || item.QuizzTitle
+        }));
+      }
+      return [];
+    }),
+    catchError(() => of([]))
+  );
+}
 }

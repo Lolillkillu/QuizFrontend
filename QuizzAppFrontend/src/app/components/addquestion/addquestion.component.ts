@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QuizService } from '../../services/quiz.service';
@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, takeUntil } from 'rxjs/operators';
 import { Subject, of } from 'rxjs';
 import { QuestionSearchResult } from '../../models/quiz.model';
 
@@ -22,12 +22,15 @@ import { QuestionSearchResult } from '../../models/quiz.model';
   templateUrl: './addquestion.component.html',
   styleUrls: ['./addquestion.component.css']
 })
-export class AddQuestionComponent implements OnInit {
+export class AddQuestionComponent implements OnInit, OnDestroy {
   questionForm: FormGroup;
   searchControl = new FormControl('');
   searchResults: QuestionSearchResult[] = [];
   groupedResults: { [key: string]: QuestionSearchResult[] } = {};
   private searchTerms = new Subject<string>();
+  private destroy$ = new Subject<void>();
+  isLoading = false;
+  searchError = false;
 
   constructor(
     private fb: FormBuilder,
@@ -46,30 +49,52 @@ export class AddQuestionComponent implements OnInit {
       distinctUntilChanged(),
       switchMap((term: string) => {
         if (term.length < 3) {
+          this.searchResults = [];
+          this.groupedResults = {};
+          this.searchError = false;
           return of([]);
         }
-        return this.quizService.searchQuestions(term);
-      })
+        
+        this.isLoading = true;
+        this.searchError = false;
+        return this.quizService.searchQuestions(term).pipe(
+          catchError(() => {
+            this.searchError = true;
+            return of([]);
+          })
+        );
+      }),
+      takeUntil(this.destroy$)
     ).subscribe({
       next: (results) => {
         this.searchResults = results;
         this.groupResults();
+        this.isLoading = false;
       },
       error: () => {
         this.searchResults = [];
         this.groupedResults = {};
+        this.isLoading = false;
+        this.searchError = true;
       }
     });
 
-    this.searchControl.valueChanges.subscribe(term => {
+    this.searchControl.valueChanges.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(term => {
       this.searchTerms.next(term || '');
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private groupResults(): void {
     this.groupedResults = {};
     this.searchResults.forEach(result => {
-      const key = result.quizzTitle;
+      const key = result.quizzTitle || 'Brak quizu';
       if (!this.groupedResults[key]) {
         this.groupedResults[key] = [];
       }
