@@ -11,6 +11,8 @@ import { AddNewAnswerComponent } from './components/addnewanswer/addnewanswer.co
 import { AddnewquestionComponent } from './components/addnewquestion/addnewquestion.component';
 import { QuizGameComponent } from './components/quizgame/quizgame.component';
 import { MultiplayerGameComponent } from './components/multiplayergame/multiplayergame.component';
+import { LoginComponent } from './components/auth/login/login.component';
+import { RegisterComponent } from './components/auth/register/register.component';
 
 const routes: Routes = [
   { path: 'quizzes', component: QuizListComponent },
@@ -25,7 +27,9 @@ const routes: Routes = [
   { path: 'quiz-game/:quizId', component: QuizGameComponent },
   { path: 'multiplayer/:gameId', component: MultiplayerGameComponent },
   { path: 'multiplayer', component: MultiplayerGameComponent },
-  { path: 'quiz-game/:quizId/multiplayer', component: MultiplayerGameComponent }
+  { path: 'quiz-game/:quizId/multiplayer', component: MultiplayerGameComponent },
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent }
 ];
 
 @NgModule({
