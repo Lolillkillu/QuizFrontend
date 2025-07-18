@@ -27,22 +27,24 @@ export class LoginComponent {
   ) {}
 
   onSubmit() {
-    this.isLoading = true;
-    this.errorMessage = null;
-    
-    this.authService.login(this.credentials.username, this.credentials.password)
-      .subscribe({
-        next: (response) => {
-          localStorage.setItem('token', response.token);
-          this.router.navigate(['/']);
-        },
-        error: (error) => {
-          this.errorMessage = error.error || 'Błąd logowania. Spróbuj ponownie';
-          this.isLoading = false;
-        },
-        complete: () => {
-          this.isLoading = false;
+  this.isLoading = true;
+  this.errorMessage = null;
+  
+  this.authService.login(this.credentials.username, this.credentials.password)
+    .subscribe({
+      next: (response) => {
+        localStorage.setItem('token', response.token);
+        this.router.navigate(['/']);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        if (error.status === 401) {
+          this.errorMessage = 'Nieprawidłowa nazwa użytkownika lub hasło';
+        } else {
+          this.errorMessage = 'Bląd serwera Spróbuj ponownie później';
         }
-      });
-  }
+        this.isLoading = false;
+      }
+    });
+}
 }

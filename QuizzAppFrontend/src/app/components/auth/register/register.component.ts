@@ -44,13 +44,16 @@ export class RegisterComponent {
         next: () => {
           this.successMessage = 'Rejestracja zakończona sukcesem';
           this.isLoading = false;
-   
           setTimeout(() => {
             this.router.navigate(['/login']);
           }, 3000);
         },
         error: (error) => {
-          this.errorMessage = error.error || 'Wystąpil błąd podczas rejestracji';
+          if (error.status === 400) {
+            this.errorMessage = error.error || 'Niepoprawne dane rejestracji';
+          } else {
+            this.errorMessage = 'Błąd serwera. Spróbuj ponownie później';
+          }
           this.isLoading = false;
         }
       });
