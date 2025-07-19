@@ -3,7 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { QuizListComponent } from './components/quizlist/quizlist.component';
 import { CreateQuizFormComponent } from './components/createquiz/createquiz-form.component';
 import { AddQuestionComponent } from './components/addquestion/addquestion.component';
-import { DeleteQuizComponent } from './components/deletequiz/deletequiz.component';
 import { QuizDetailComponent } from './components/quizdetail/quizdetail.component';
 import { EditQuestionComponent } from './components/editquestion/editquestion.component';
 import { EditAnswerComponent } from './components/editanswer/editanswer.component';
@@ -19,7 +18,6 @@ export const routes: Routes = [
   { path: 'quizzes', component: QuizListComponent },
   { path: 'create-quiz', component: CreateQuizFormComponent, canActivate: [AuthGuard] },
   { path: 'quizzes/:quizId/add-question', component: AddQuestionComponent, canActivate: [AuthGuard] },
-  { path: 'delete-quiz', component: DeleteQuizComponent, canActivate: [AuthGuard] },
   { path: 'quizzes/:id', component: QuizDetailComponent },
   { path: 'quizzes/:quizId/editquestion/:questionId', component: EditQuestionComponent, canActivate: [AuthGuard] },
   { path: 'quizzes/:quizId/questions/:questionId/answers/:answerId/edit', component: EditAnswerComponent, canActivate: [AuthGuard] },
