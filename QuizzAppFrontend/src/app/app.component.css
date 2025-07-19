@@ -47,3 +47,30 @@
   margin-left: auto;
   font-size: 1.2rem;
 }
+
+.user-info {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.username {
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.logout-button {
+  background: none;
+  border: 1px solid #5b5fc4;
+  color: #007bff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #007bff;
+  color: white;
+}

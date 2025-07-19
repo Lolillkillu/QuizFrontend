@@ -5,9 +5,18 @@
       <a routerLink="/quizzes" routerLinkActive="active">Lista Quizów</a>
       <a routerLink="/create-quiz" routerLinkActive="active">Stwórz Nowy Quiz</a>
       <a routerLink="/delete-quiz" routerLinkActive="active">Usuń Quiz</a>
-      <a routerLink="/login" routerLinkActive="active" class="user-icon">
-        <i class="fas fa-user"></i>
-      </a>
+
+      <ng-container *ngIf="isAuthenticated; else loginLink">
+        <div class="user-info">
+          <span class="username">{{username}}</span>
+          <button (click)="logout()" class="logout-button">Wyloguj</button>
+        </div>
+      </ng-container>
+      <ng-template #loginLink>
+        <a routerLink="/login" routerLinkActive="active" class="user-icon">
+          <i class="fas fa-user"></i>
+        </a>
+      </ng-template>
     </nav>
   </header>
 

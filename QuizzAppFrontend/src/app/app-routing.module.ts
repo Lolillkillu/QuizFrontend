@@ -13,17 +13,18 @@ import { QuizGameComponent } from './components/quizgame/quizgame.component';
 import { MultiplayerGameComponent } from './components/multiplayergame/multiplayergame.component';
 import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
+import { AuthGuard } from './services/auth.guard';
 
-const routes: Routes = [
+export const routes: Routes = [
   { path: 'quizzes', component: QuizListComponent },
-  { path: 'create-quiz', component: CreateQuizFormComponent },
-  { path: 'quizzes/:quizId/add-question', component: AddQuestionComponent },
-  { path: 'delete-quiz', component: DeleteQuizComponent },
+  { path: 'create-quiz', component: CreateQuizFormComponent, canActivate: [AuthGuard] },
+  { path: 'quizzes/:quizId/add-question', component: AddQuestionComponent, canActivate: [AuthGuard] },
+  { path: 'delete-quiz', component: DeleteQuizComponent, canActivate: [AuthGuard] },
   { path: 'quizzes/:id', component: QuizDetailComponent },
-  { path: 'quizzes/:quizId/editquestion/:questionId', component: EditQuestionComponent },
-  { path: 'quizzes/:quizId/questions/:questionId/answers/:answerId/edit', component: EditAnswerComponent },
-  { path: 'quizzes/:quizId/questions/:questionId/add-answer', component: AddNewAnswerComponent },
-  { path: 'quizzes/:quizId/add-question', component: AddnewquestionComponent },
+  { path: 'quizzes/:quizId/editquestion/:questionId', component: EditQuestionComponent, canActivate: [AuthGuard] },
+  { path: 'quizzes/:quizId/questions/:questionId/answers/:answerId/edit', component: EditAnswerComponent, canActivate: [AuthGuard] },
+  { path: 'quizzes/:quizId/questions/:questionId/add-answer', component: AddNewAnswerComponent, canActivate: [AuthGuard] },
+  { path: 'quizzes/:quizId/add-question', component: AddnewquestionComponent, canActivate: [AuthGuard] },
   { path: 'quiz-game/:quizId', component: QuizGameComponent },
   { path: 'multiplayer/:gameId', component: MultiplayerGameComponent },
   { path: 'multiplayer', component: MultiplayerGameComponent },
