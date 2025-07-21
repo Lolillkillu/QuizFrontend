@@ -2,23 +2,21 @@
   <div *ngIf="viewState === 'init'" class="init-container">
     <h2>Stwórz nową grę</h2>
     <div class="connection-status">
-      Status połączenia: 
-      <span [class.connected]="connectionStatus === 'connected'"
-            [class.connecting]="connectionStatus === 'connecting'"
-            [class.disconnected]="connectionStatus === 'disconnected'">
+      Status połączenia:
+      <span [class.connected]="connectionStatus === 'connected'" [class.connecting]="connectionStatus === 'connecting'"
+        [class.disconnected]="connectionStatus === 'disconnected'">
         {{ getConnectionStatusText() }}
       </span>
     </div>
-    
-    <button (click)="createGame()" 
-            [disabled]="isSubmitting || connectionStatus !== 'connected'">
+
+    <button (click)="createGame()" [disabled]="isSubmitting || connectionStatus !== 'connected'">
       {{ isSubmitting ? 'Tworzenie...' : 'Stwórz grę' }}
     </button>
-    
+
     <div *ngIf="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>
-    
+
     <div *ngIf="isSubmitting" class="loading-indicator">
       <div class="spinner"></div>
       <p>Tworzenie gry...</p>
@@ -27,16 +25,15 @@
 
   <div *ngIf="viewState === 'gameCreated'" class="game-created-container">
     <h2>Gra utworzona pomyślnie!</h2>
-    
+
     <div class="connection-status">
-      Status połączenia: 
-      <span [class.connected]="connectionStatus === 'connected'"
-            [class.connecting]="connectionStatus === 'connecting'"
-            [class.disconnected]="connectionStatus === 'disconnected'">
+      Status połączenia:
+      <span [class.connected]="connectionStatus === 'connected'" [class.connecting]="connectionStatus === 'connecting'"
+        [class.disconnected]="connectionStatus === 'disconnected'">
         {{ getConnectionStatusText() }}
       </span>
     </div>
-    
+
     <div class="link-share-info">
       <p>Udostępnij link:</p>
       <div class="game-link">{{ gameLink }}</div>
@@ -44,12 +41,11 @@
         <i class="copy-icon">📋</i> Kopiuj link
       </button>
     </div>
-    
+
     <h3>Dołącz do gry jako host:</h3>
     <div class="name-input">
-      <input #hostNameInput type="text" placeholder="Twój nick" [disabled]="isJoining"/>
-      <button (click)="joinGame(hostNameInput.value)" 
-              [disabled]="isJoining || connectionStatus !== 'connected'">
+      <input #hostNameInput type="text" placeholder="Twój nick" [disabled]="isJoining" />
+      <button (click)="joinGame(hostNameInput.value)" [disabled]="isJoining || connectionStatus !== 'connected'">
         {{ isJoining ? 'Dołączanie...' : 'Dołącz do gry' }}
       </button>
       <div *ngIf="errorMessage" class="error-message">
@@ -60,26 +56,24 @@
 
   <div *ngIf="viewState === 'nameInput'" class="name-input">
     <h2>Dołącz do gry</h2>
-    <input #playerNameInput type="text" placeholder="Twój nick" [disabled]="isJoining"/>
-    
+    <input #playerNameInput type="text" placeholder="Twój nick" [disabled]="isJoining" />
+
     <div class="connection-status">
-      Status połączenia: 
-      <span [class.connected]="connectionStatus === 'connected'"
-            [class.connecting]="connectionStatus === 'connecting'"
-            [class.disconnected]="connectionStatus === 'disconnected'">
+      Status połączenia:
+      <span [class.connected]="connectionStatus === 'connected'" [class.connecting]="connectionStatus === 'connecting'"
+        [class.disconnected]="connectionStatus === 'disconnected'">
         {{ getConnectionStatusText() }}
       </span>
     </div>
-    
-    <button (click)="joinGame(playerNameInput.value)" 
-            [disabled]="isJoining || connectionStatus !== 'connected'">
+
+    <button (click)="joinGame(playerNameInput.value)" [disabled]="isJoining || connectionStatus !== 'connected'">
       {{ isJoining ? 'Dołączanie...' : 'Dołącz do gry' }}
     </button>
-    
+
     <div *ngIf="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>
-    
+
     <div *ngIf="isJoining" class="loading-indicator">
       <div class="spinner"></div>
       <p>Dołączanie do gry...</p>
@@ -108,34 +102,34 @@
 
     <div *ngIf="gameStatus === 'waiting' && playerStatus === 'playing'">
       <h2>Oczekiwanie na graczy</h2>
-      
+
       <div class="connection-status">
-        Status połączenia: 
+        Status połączenia:
         <span [class.connected]="connectionStatus === 'connected'"
-              [class.connecting]="connectionStatus === 'connecting'"
-              [class.disconnected]="connectionStatus === 'disconnected'">
+          [class.connecting]="connectionStatus === 'connecting'"
+          [class.disconnected]="connectionStatus === 'disconnected'">
           {{ getConnectionStatusText() }}
         </span>
       </div>
-      
+
       <div class="game-id-container">
         <p>ID gry: <strong>{{ gameId }}</strong></p>
         <button class="copy-button" (click)="copyGameLink()">
           <i class="copy-icon">📋</i> Kopiuj link
         </button>
       </div>
-      
+
       <div class="link-share-info">
         <p>Udostępnij link:</p>
         <div class="game-link">{{ gameLink || 'Generowanie linku...' }}</div>
       </div>
-      
+
       <div *ngIf="isHost" class="settings-header">
         <button (click)="toggleTimeSettings()" class="settings-button">
           {{ showTimeSettings ? 'Ukryj ustawienia' : 'Pokaż ustawienia' }}
         </button>
       </div>
-      
+
       <div *ngIf="showTimeSettings" class="time-settings">
         <div class="setting-row">
           <label>Ograniczenie czasowe:</label>
@@ -145,7 +139,7 @@
           </label>
           <span>{{ isTimeLimitEnabled ? 'On' : 'Off' }}</span>
         </div>
-        
+
         <div *ngIf="isTimeLimitEnabled" class="time-limit-slider">
           <label>Czas na pytanie: {{ formatTime(timeLimit) }}</label>
           <input type="range" min="5" max="60" [(ngModel)]="timeLimit" class="time-slider">
@@ -154,7 +148,7 @@
             <span>60s</span>
           </div>
         </div>
-        
+
         <div class="setting-row">
           <label>Tryb wielokrotnego wyboru:</label>
           <label class="toggle-switch">
@@ -163,9 +157,18 @@
           </label>
           <span>{{ isMultiChoiceEnabled ? 'On' : 'Off' }}</span>
         </div>
-        
+
+        <div class="setting-row">
+          <label>Liczba pytań: {{ numberOfQuestions }}</label>
+          <input type="range" min="5" max="20" [(ngModel)]="numberOfQuestions" class="time-slider">
+          <div class="slider-labels">
+            <span>5</span>
+            <span>20</span>
+          </div>
+        </div>
+
         <div *ngIf="isMultiChoiceEnabled" class="setting-row">
-          <label>Liczba odpowiedzi na pytanie: {{ answersPerQuestion }}</label>
+          <label>Liczba odpowiedzi: {{ answersPerQuestion }}</label>
           <input type="range" min="2" max="6" [(ngModel)]="answersPerQuestion" class="time-slider">
           <div class="slider-labels">
             <span>2</span>
@@ -173,7 +176,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="players-list-container">
         <h3>Gracze w lobby ({{ players.length }}/2):</h3>
         <div class="players-list">
@@ -215,49 +218,37 @@
       </div>
 
       <div class="progress-bar">
-        <div 
-          *ngFor="let status of questionStatuses; let i = index"
-          class="progress-item"
-          [class.correct]="status === 'correct'"
-          [class.incorrect]="status === 'incorrect'"
-          [class.active]="i === currentQuestionIndex"
-          [class.unanswered]="status === 'unanswered'"
-        ></div>
+        <div *ngFor="let status of questionStatuses; let i = index" class="progress-item"
+          [class.correct]="status === 'correct'" [class.incorrect]="status === 'incorrect'"
+          [class.active]="i === currentQuestionIndex" [class.unanswered]="status === 'unanswered'"></div>
       </div>
 
       <div class="game-info">
         <div>Twoje punkty: {{ currentScore }}</div>
-        <div>Pytanie: {{ currentQuestionIndex + 1 }}/10</div>
+        <div>Pytanie: {{ currentQuestionIndex + 1 }}/{{ numberOfQuestions }}</div>
         <div>Gracze online: {{ players.length }}</div>
       </div>
 
       <h2>{{ currentQuestion?.questionText }}</h2>
-      
+
       <div class="answers-grid">
-        <div 
-          *ngFor="let answer of currentQuestion?.answers" 
-          class="answer-card"
+        <div *ngFor="let answer of currentQuestion?.answers" class="answer-card"
           [class.selected]="isMultiChoiceEnabled ? isSelected(answer) : answer === selectedAnswer"
           [class.correct]="isAnswerSelected && answer.isCorrect"
-          [class.incorrect]="isAnswerSelected && !answer.isCorrect && 
-            (isMultiChoiceEnabled ? isSelected(answer) : answer === selectedAnswer)"
-          (click)="isMultiChoiceEnabled ? toggleAnswer(answer) : selectAnswer(answer)"
-        >
+          [class.incorrect]="isAnswerSelected && !answer.isCorrect && (isMultiChoiceEnabled ? isSelected(answer) : answer === selectedAnswer)"
+          (click)="isMultiChoiceEnabled ? toggleAnswer(answer) : selectAnswer(answer)">
           {{ answer.answerText }}
           <span *ngIf="isMultiChoiceEnabled && isSelected(answer)" class="checkmark">✓</span>
         </div>
       </div>
-      
+
       <div *ngIf="isMultiChoiceEnabled" class="multi-choice-controls">
-        <button 
-          class="submit-button" 
-          (click)="submitMultiChoiceAnswers()"
-          [disabled]="selectedAnswers.length === 0 || isAnswerSubmitted"
-        >
+        <button class="submit-button" (click)="submitMultiChoiceAnswers()"
+          [disabled]="selectedAnswers.length === 0 || isAnswerSubmitted">
           {{ isAnswerSubmitted ? 'Odpowiedź zatwierdzona' : 'Zatwierdź odpowiedzi' }}
         </button>
       </div>
-      
+
       <div *ngIf="isAnswerSelected" class="feedback-message">
         <div *ngIf="selectedAnswer?.isCorrect" class="correct-feedback">
           Dobrze
@@ -300,15 +291,14 @@
                     <div *ngFor="let answer of player.answers; let qi = index" class="answer-item">
                       <p><strong>Pytanie {{ qi + 1 }}: {{ answer.questionText }}</strong></p>
                       <p>
-                        Twoja odpowiedź: 
-                        <span [class.correct]="answer.isCorrect" 
-                              [class.incorrect]="!answer.isCorrect"
-                              [class.no-answer]="answer.answerTexts.length === 0">
+                        Twoja odpowiedź:
+                        <span [class.correct]="answer.isCorrect" [class.incorrect]="!answer.isCorrect"
+                          [class.no-answer]="answer.answerTexts.length === 0">
                           {{ answer.answerTexts.length > 0 ? (answer.answerTexts.join(', ')) : 'Brak odpowiedzi' }}
                         </span>
                       </p>
                       <p class="correct-answer">
-                        Poprawne odpowiedzi: 
+                        Poprawne odpowiedzi:
                         <span *ngFor="let correct of answer.correctAnswers; let last = last">
                           {{ correct.answerText }}{{ !last ? ', ' : '' }}
                         </span>

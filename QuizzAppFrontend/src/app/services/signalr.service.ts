@@ -135,5 +135,8 @@ export class SignalrService {
   public submitMultiAnswer(gameId: string, questionId: number, answerIds: number[]): void {
     this.hubConnection.send('SubmitMultiAnswer', gameId, questionId, answerIds);
   }
-
+  
+  public setNumberOfQuestions(gameId: string, numberOfQuestions: number): Promise<void> {
+  return this.hubConnection.invoke('SetNumberOfQuestions', gameId, numberOfQuestions);
+}
 }

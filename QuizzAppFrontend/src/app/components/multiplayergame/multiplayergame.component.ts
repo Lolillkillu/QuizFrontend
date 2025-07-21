@@ -52,6 +52,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   isAnswerSubmitted = false;
   gameQuestions: any[] = [];
   correctAnswersMap: { [questionId: number]: any[] } = {};
+  numberOfQuestions = 10;
 
   constructor(
     private route: ActivatedRoute,
@@ -283,10 +284,12 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     if (!this.gameId) return;
 
     if (this.isHost) {
-      this.signalrService.setGameMode(this.gameId!, 
-        this.isMultiChoiceEnabled ? GameMode.MultipleChoice : GameMode.SingleChoice)
+      this.signalrService.setGameMode(this.gameId!, this.isMultiChoiceEnabled ? GameMode.MultipleChoice : GameMode.SingleChoice)
         .then(() => {
           return this.signalrService.setTimeSettings(this.gameId!, this.isTimeLimitEnabled, this.timeLimit);
+        })
+        .then(() => {
+          return this.signalrService.setNumberOfQuestions(this.gameId!, this.numberOfQuestions);
         })
         .then(() => {
           this.isPlayerReady = true;
@@ -295,7 +298,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
           }
         })
         .catch(err => {
-          this.errorMessage = 'Błąd limitu czasu';
+          this.errorMessage = 'Błąd ustawień gry';
           console.error(err);
         });
     } else {
