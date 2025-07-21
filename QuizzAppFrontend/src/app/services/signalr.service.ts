@@ -10,13 +10,13 @@ export enum GameMode {
 @Injectable({ providedIn: 'root' })
 export class SignalrService {
   private hubConnection: signalR.HubConnection;
-  
+
   public connectionStatus$ = new BehaviorSubject<string>('disconnected');
   public gameCreated$ = new Subject<string>();
   public playerJoined$ = new Subject<any[]>();
   public nextQuestion$ = new Subject<any>();
   public answerProcessed$ = new Subject<{ playerId: string, isCorrect: boolean }>();
-  public gameCompleted$ = new Subject<{players: any[], questions?: any[]}>();
+  public gameCompleted$ = new Subject<{ players: any[], questions?: any[] }>();
   public gameError$ = new Subject<string>();
   public quizIdSet$ = new Subject<void>();
   public playerReady$ = new Subject<string>();
@@ -85,7 +85,7 @@ export class SignalrService {
     });
 
     this.hubConnection.on('PlayerReady', (playerId: string) => {
-        this.playerReady$.next(playerId);
+      this.playerReady$.next(playerId);
     });
 
     this.hubConnection.on('GameModeUpdated', (mode: GameMode) => {
@@ -135,8 +135,12 @@ export class SignalrService {
   public submitMultiAnswer(gameId: string, questionId: number, answerIds: number[]): void {
     this.hubConnection.send('SubmitMultiAnswer', gameId, questionId, answerIds);
   }
-  
+
   public setNumberOfQuestions(gameId: string, numberOfQuestions: number): Promise<void> {
-  return this.hubConnection.invoke('SetNumberOfQuestions', gameId, numberOfQuestions);
-}
+    return this.hubConnection.invoke('SetNumberOfQuestions', gameId, numberOfQuestions);
+  }
+
+  public setAnswersPerQuestion(gameId: string, answersPerQuestion: number): Promise<void> {
+    return this.hubConnection.invoke('SetAnswersPerQuestion', gameId, answersPerQuestion);
+  }
 }

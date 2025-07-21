@@ -168,7 +168,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         if (player) {
           player.completed = true;
         }
-        
+
         if (playerId === this.playerId) {
           this.playerCompleted = true;
           this.playerStatus = 'completed';
@@ -190,9 +190,9 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.resetState();
         this.isPlayerReady = false;
         this.playerStatus = 'playing';
-        
+
         this.currentQuestionIndex++;
-        
+
         if (this.currentQuestionIndex === 0) {
           this.questionStatuses = Array(10).fill('unanswered');
         }
@@ -216,7 +216,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         if (result.playerId === this.playerId) {
           const status = result.isCorrect ? 'correct' : 'incorrect';
           this.questionStatuses[this.currentQuestionIndex] = status;
-          
+
           if (result.isCorrect) {
             this.currentScore++;
           }
@@ -229,7 +229,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.gameStatus = 'completed';
         this.playerCompleted = true;
         this.playerStatus = 'completed';
-        
+
         if (results.questions) {
           results.questions.forEach((q: any) => {
             this.correctAnswersMap[q.questionId] = q.correctAnswers;
@@ -243,7 +243,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
             score: r.score,
             answers: r.answers.map((a: any) => ({
               ...a,
-              correctAnswers: a.correctAnswers || 
+              correctAnswers: a.correctAnswers ||
                 (this.correctAnswersMap[a.questionId] || [])
             })) || []
           }))
@@ -285,11 +285,13 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
     if (this.isHost) {
       this.signalrService.setGameMode(this.gameId!, this.isMultiChoiceEnabled ? GameMode.MultipleChoice : GameMode.SingleChoice)
+        .then(() => this.signalrService.setTimeSettings(this.gameId!, this.isTimeLimitEnabled, this.timeLimit))
+        .then(() => this.signalrService.setNumberOfQuestions(this.gameId!, this.numberOfQuestions))
         .then(() => {
-          return this.signalrService.setTimeSettings(this.gameId!, this.isTimeLimitEnabled, this.timeLimit);
-        })
-        .then(() => {
-          return this.signalrService.setNumberOfQuestions(this.gameId!, this.numberOfQuestions);
+          if (this.isMultiChoiceEnabled) {
+            return this.signalrService.setAnswersPerQuestion(this.gameId!, this.answersPerQuestion);
+          }
+          return Promise.resolve();
         })
         .then(() => {
           this.isPlayerReady = true;
@@ -354,7 +356,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     this.stopTimer();
     this.isAnswerSelected = true;
     this.isAnswerSubmitted = true;
-    
+
     const answerIds = this.selectedAnswers.map(a => a.answerId);
     this.signalrService.submitMultiAnswer(
       this.gameId!,
@@ -404,14 +406,14 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     this.stopTimer();
     this.timeLeft = this.timeLimit;
     this.timerEndTime = Date.now() + this.timeLimit * 1000;
-    
+
     this.timer = setInterval(() => {
       const timeRemaining = Math.max(0, Math.floor((this.timerEndTime - Date.now()) / 1000));
-      
+
       if (timeRemaining !== this.timeLeft) {
         this.timeLeft = timeRemaining;
       }
-      
+
       if (this.timeLeft <= 0) {
         this.stopTimer();
         this.handleTimeExpired();
