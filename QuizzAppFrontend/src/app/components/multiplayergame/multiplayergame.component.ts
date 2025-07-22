@@ -191,11 +191,12 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
         this.isPlayerReady = false;
         this.playerStatus = 'playing';
 
-        this.currentQuestionIndex++;
-
-        if (this.currentQuestionIndex === 0) {
-          this.questionStatuses = Array(10).fill('unanswered');
+        if (this.currentQuestionIndex === -1) {
+          this.numberOfQuestions = question.totalQuestions || 10;
+          this.questionStatuses = Array(this.numberOfQuestions).fill('unanswered');
         }
+
+        this.currentQuestionIndex++;
 
         if (!this.gameQuestions.some(q => q.questionId === question.questionId)) {
           this.gameQuestions.push(question);
