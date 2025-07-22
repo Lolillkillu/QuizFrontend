@@ -112,32 +112,32 @@ export class QuizGameComponent implements OnInit, OnDestroy {
   }
 
   loadQuestions() {
-    if (this.isMultiChoiceEnabled) {
-      this.quizService.getRandomMultiQuestions(
-        this.quizId,
-        this.numberOfTiles,
-        this.answersPerQuestion
-      ).subscribe({
-        next: (response: any) => {
-          this.questions = response.$values.map((q: any) => this.mapQuestion(q));
-          this.questionStatuses = new Array(this.questions.length).fill('unanswered');
-          this.resetState();
-          if (this.isTimeLimitEnabled) this.startTimer();
-        },
-        error: (err) => console.error('Error:', err)
-      });
-    } else {
-      this.quizService.getRandomQuestions(this.quizId).subscribe({
-        next: (response: any) => {
-          this.questions = response.$values.map((q: any) => this.mapQuestion(q));
-          this.questionStatuses = new Array(this.questions.length).fill('unanswered');
-          this.resetState();
-          if (this.isTimeLimitEnabled) this.startTimer();
-        },
-        error: (err) => console.error('Error:', err)
-      });
-    }
+  if (this.isMultiChoiceEnabled) {
+    this.quizService.getRandomMultiQuestions(
+      this.quizId,
+      this.numberOfTiles,
+      this.answersPerQuestion
+    ).subscribe({
+      next: (response: any) => {
+        this.questions = response.$values.map((q: any) => this.mapQuestion(q));
+        this.questionStatuses = new Array(this.questions.length).fill('unanswered');
+        this.resetState();
+        if (this.isTimeLimitEnabled) this.startTimer();
+      },
+      error: (err) => console.error('Error:', err)
+    });
+  } else {
+    this.quizService.getRandomQuestions(this.quizId, this.numberOfTiles).subscribe({
+      next: (response: any) => {
+        this.questions = response.$values.map((q: any) => this.mapQuestion(q));
+        this.questionStatuses = new Array(this.questions.length).fill('unanswered');
+        this.resetState();
+        if (this.isTimeLimitEnabled) this.startTimer();
+      },
+      error: (err) => console.error('Error:', err)
+    });
   }
+}
 
   private mapQuestion(question: any): QuestionWithAnswers {
     return {

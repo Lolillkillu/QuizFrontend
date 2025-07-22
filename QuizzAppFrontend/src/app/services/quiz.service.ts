@@ -73,9 +73,10 @@ export class QuizService {
     return this.http.delete<void>(`${this.apiUrl}/Question/${questionId}`);
   }
 
-  getRandomQuestions(quizId: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/GetRandomQuestions/${quizId}`);
-  }
+  getRandomQuestions(quizId: number, numberOfQuestions: number = 10): Observable<any> {
+  const url = `${this.apiUrl}/GetRandomQuestions/${quizId}?numberOfQuestions=${numberOfQuestions}`;
+  return this.http.get<any>(url);
+}
 
   getRandomMultiQuestions(
     quizId: number,
