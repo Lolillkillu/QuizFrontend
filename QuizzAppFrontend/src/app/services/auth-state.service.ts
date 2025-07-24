@@ -16,7 +16,7 @@ export class AuthStateService {
   private checkInitialAuthState(): void {
     const token = localStorage.getItem('token');
     const username = localStorage.getItem('username') || '';
-    
+
     if (token) {
       this.isAuthenticatedSubject.next(true);
       this.usernameSubject.next(username);
@@ -34,5 +34,9 @@ export class AuthStateService {
     localStorage.removeItem('username');
     this.isAuthenticatedSubject.next(false);
     this.usernameSubject.next('');
+  }
+
+  getUsername(): string {
+    return this.usernameSubject.value || localStorage.getItem('username') || '';
   }
 }

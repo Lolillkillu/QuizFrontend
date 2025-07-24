@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameMode, SignalrService } from '../../services/signalr.service';
 import { QuizService } from '../../services/quiz.service';
+import { AuthStateService } from '../../services/auth-state.service';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -58,7 +59,8 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private signalrService: SignalrService,
-    private quizService: QuizService
+    private quizService: QuizService,
+    private authState: AuthStateService
   ) { }
 
   ngOnInit(): void {
@@ -73,9 +75,18 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
       this.updateViewState();
     });
 
+    const loggedInUsername = this.authState.getUsername();
+    if (loggedInUsername) {
+      this.playerName = loggedInUsername;
+      
+      if (this.gameId) {
+        this.joinGame(this.playerName);
+      }
+    }
+
     const connectionTimeout = setTimeout(() => {
       if (this.connectionStatus === 'disconnected') {
-        this.errorMessage = 'Bład połączenia z serwerem. Odśwież stronę.';
+        this.errorMessage = 'Błąd połączenia z serwerem. Odśwież stronę.';
       }
     }, 10000);
 
@@ -85,6 +96,10 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
           clearTimeout(connectionTimeout);
         }
         this.connectionStatus = status;
+
+        if (status === 'connected' && !this.isHost && this.gameId && this.playerName) {
+          this.joinGame(this.playerName);
+        }
       })
     );
 
@@ -350,9 +365,7 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   }
 
   submitMultiChoiceAnswers() {
-    if (this.isAnswerSubmitted || this.isAnswerSelected) {
-      return;
-    }
+    if (this.isAnswerSubmitted || this.isAnswerSelected) return;
 
     this.stopTimer();
     this.isAnswerSelected = true;
@@ -410,11 +423,9 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
 
     this.timer = setInterval(() => {
       const timeRemaining = Math.max(0, Math.floor((this.timerEndTime - Date.now()) / 1000));
-
       if (timeRemaining !== this.timeLeft) {
         this.timeLeft = timeRemaining;
       }
-
       if (this.timeLeft <= 0) {
         this.stopTimer();
         this.handleTimeExpired();
@@ -456,7 +467,6 @@ export class MultiplayerGameComponent implements OnInit, OnDestroy {
   getCorrectAnswerTexts(questionId: number): string {
     const question = this.gameQuestions.find(q => q.questionId === questionId);
     if (!question) return '';
-
     const correctAnswers = question.answers.filter((a: any) => a.isCorrect);
     return correctAnswers.map((a: any) => a.answerText).join(', ');
   }

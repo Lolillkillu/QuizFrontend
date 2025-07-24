@@ -44,7 +44,8 @@
 
     <h3>Dołącz do gry jako host:</h3>
     <div class="name-input">
-      <input #hostNameInput type="text" placeholder="Twój nick" [disabled]="isJoining" />
+      <input #hostNameInput type="text" placeholder="Twój nick" [value]="playerName"
+        [disabled]="isJoining || !!playerName" />
       <button (click)="joinGame(hostNameInput.value)" [disabled]="isJoining || connectionStatus !== 'connected'">
         {{ isJoining ? 'Dołączanie...' : 'Dołącz do gry' }}
       </button>
@@ -56,24 +57,29 @@
 
   <div *ngIf="viewState === 'nameInput'" class="name-input">
     <h2>Dołącz do gry</h2>
-    <input #playerNameInput type="text" placeholder="Twój nick" [disabled]="isJoining" />
 
-    <div class="connection-status">
-      Status połączenia:
-      <span [class.connected]="connectionStatus === 'connected'" [class.connecting]="connectionStatus === 'connecting'"
-        [class.disconnected]="connectionStatus === 'disconnected'">
-        {{ getConnectionStatusText() }}
-      </span>
+    <div *ngIf="playerName; else manualInput">
+      <p>Witaj, <strong>{{ playerName }}</strong>! Łączenie z grą...</p>
     </div>
 
-    <button (click)="joinGame(playerNameInput.value)" [disabled]="isJoining || connectionStatus !== 'connected'">
-      {{ isJoining ? 'Dołączanie...' : 'Dołącz do gry' }}
-    </button>
+    <ng-template #manualInput>
+      <input #playerNameInput type="text" placeholder="Twój nick" [disabled]="isJoining" />
+      <div class="connection-status">
+        Status połączenia:
+        <span [class.connected]="connectionStatus === 'connected'"
+          [class.connecting]="connectionStatus === 'connecting'"
+          [class.disconnected]="connectionStatus === 'disconnected'">
+          {{ getConnectionStatusText() }}
+        </span>
+      </div>
+      <button (click)="joinGame(playerNameInput.value)" [disabled]="isJoining || connectionStatus !== 'connected'">
+        {{ isJoining ? 'Dołączanie...' : 'Dołącz do gry' }}
+      </button>
+    </ng-template>
 
     <div *ngIf="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>
-
     <div *ngIf="isJoining" class="loading-indicator">
       <div class="spinner"></div>
       <p>Dołączanie do gry...</p>
@@ -184,8 +190,6 @@
             <div class="player-avatar">{{ player.isHost ? '👑' : '👤' }}</div>
             <div class="player-name">{{ player.name }}</div>
             <div class="player-status" *ngIf="player.completed">✅ Ukończono</div>
-            <div class="player-status" *ngIf="!player.completed && player.isReady">✅ Gotowy</div>
-            <div class="player-status" *ngIf="!player.completed && !player.isReady">❌ Nie gotowy</div>
           </div>
           <div *ngIf="players.length < 2" class="player-card waiting">
             <div class="player-avatar">⏳</div>
