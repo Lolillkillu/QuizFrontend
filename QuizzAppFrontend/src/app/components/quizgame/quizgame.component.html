@@ -131,7 +131,7 @@
     </div>
 
     <div *ngIf="quizFinished" class="quiz-summary">
-      <h2>Koniec gry</h2>
+      <h2>{{username}} ukończył grę</h2>
       <div class="result-box" [class]="getResultClass()">
         <p>Twój wynik: {{currentScore}}/{{questions.length}}</p>
         <p class="result-message">{{getResultText()}}</p>

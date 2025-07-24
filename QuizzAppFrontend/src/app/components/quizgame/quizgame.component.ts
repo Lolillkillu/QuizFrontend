@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { AuthStateService } from '../../services/auth-state.service';
 
 interface AnswerDto {
   $id: string;
@@ -59,15 +60,18 @@ export class QuizGameComponent implements OnInit, OnDestroy {
   answersPerQuestion = 4;
   selectedAnswers: AnswerDto[] = [];
   isAnswerSubmitted = false;
+  username: string = '';
 
   constructor(
     private quizService: QuizService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private authStateService: AuthStateService
   ) {}
 
   ngOnInit() {
     this.quizId = Number(this.route.snapshot.paramMap.get('quizId'));
+    this.username = this.authStateService.getUsername();
   }
 
   ngOnDestroy() {
