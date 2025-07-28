@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { QuestionSearchResult, QuestionWithAnswers, Quiz } from '../models/quiz.model';
+import { QuestionSearchResult, QuestionWithAnswers, Quiz, SubmitGameResult } from '../models/quiz.model';
 import { CreateQuiz } from '../models/createquiz.model';
 import { Question } from '../models/question.model';
 import { Answer } from '../models/answer.model';
@@ -74,9 +74,9 @@ export class QuizService {
   }
 
   getRandomQuestions(quizId: number, numberOfQuestions: number = 10): Observable<any> {
-  const url = `${this.apiUrl}/GetRandomQuestions/${quizId}?numberOfQuestions=${numberOfQuestions}`;
-  return this.http.get<any>(url);
-}
+    const url = `${this.apiUrl}/GetRandomQuestions/${quizId}?numberOfQuestions=${numberOfQuestions}`;
+    return this.http.get<any>(url);
+  }
 
   getRandomMultiQuestions(
     quizId: number,
@@ -88,33 +88,38 @@ export class QuizService {
   }
 
   searchQuestions(searchTerm: string): Observable<QuestionSearchResult[]> {
-  if (!searchTerm || searchTerm.trim().length < 3) {
-    return of([]);
+    if (!searchTerm || searchTerm.trim().length < 3) {
+      return of([]);
+    }
+
+    const url = `${this.apiUrl}/SearchQuestions?searchTerm=${encodeURIComponent(searchTerm)}`;
+
+    return this.http.get<any>(url).pipe(
+      map(response => {
+        if (response && response.$values && Array.isArray(response.$values)) {
+          return response.$values.map((item: any) => ({
+            questionId: item.questionId || item.QuestionId,
+            questionText: item.questionText || item.QuestionText,
+            quizzId: item.quizzId || item.QuizzId,
+            quizzTitle: item.quizzTitle || item.QuizzTitle
+          }));
+        }
+        else if (Array.isArray(response)) {
+          return response.map(item => ({
+            questionId: item.questionId || item.QuestionId,
+            questionText: item.questionText || item.QuestionText,
+            quizzId: item.quizzId || item.QuizzId,
+            quizzTitle: item.quizzTitle || item.QuizzTitle
+          }));
+        }
+        return [];
+      }),
+      catchError(() => of([]))
+    );
   }
 
-  const url = `${this.apiUrl}/SearchQuestions?searchTerm=${encodeURIComponent(searchTerm)}`;
-  
-  return this.http.get<any>(url).pipe(
-    map(response => {
-      if (response && response.$values && Array.isArray(response.$values)) {
-        return response.$values.map((item: any) => ({
-          questionId: item.questionId || item.QuestionId,
-          questionText: item.questionText || item.QuestionText,
-          quizzId: item.quizzId || item.QuizzId,
-          quizzTitle: item.quizzTitle || item.QuizzTitle
-        }));
-      }
-      else if (Array.isArray(response)) {
-        return response.map(item => ({
-          questionId: item.questionId || item.QuestionId,
-          questionText: item.questionText || item.QuestionText,
-          quizzId: item.quizzId || item.QuizzId,
-          quizzTitle: item.quizzTitle || item.QuizzTitle
-        }));
-      }
-      return [];
-    }),
-    catchError(() => of([]))
-  );
-}
+  submitGameResults(results: SubmitGameResult): Observable<any> {
+    const url = `${this.apiUrl}/submit-results`;
+    return this.http.post(url, results);
+  }
 }

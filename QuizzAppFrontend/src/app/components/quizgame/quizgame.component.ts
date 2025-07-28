@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { AuthStateService } from '../../services/auth-state.service';
+import { SubmitGameResult } from '../../models/quiz.model';
 
 interface AnswerDto {
   $id: string;
@@ -61,6 +62,8 @@ export class QuizGameComponent implements OnInit, OnDestroy {
   selectedAnswers: AnswerDto[] = [];
   isAnswerSubmitted = false;
   username: string = '';
+  resultsSubmitted = false;
+  submissionError: string | null = null;
 
   constructor(
     private quizService: QuizService,
@@ -112,36 +115,38 @@ export class QuizGameComponent implements OnInit, OnDestroy {
     this.answersPerQuestion = 4;
     this.selectedAnswers = [];
     this.isAnswerSubmitted = false;
+    this.resultsSubmitted = false;
+    this.submissionError = null;
     this.stopTimer();
   }
 
   loadQuestions() {
-  if (this.isMultiChoiceEnabled) {
-    this.quizService.getRandomMultiQuestions(
-      this.quizId,
-      this.numberOfTiles,
-      this.answersPerQuestion
-    ).subscribe({
-      next: (response: any) => {
-        this.questions = response.$values.map((q: any) => this.mapQuestion(q));
-        this.questionStatuses = new Array(this.questions.length).fill('unanswered');
-        this.resetState();
-        if (this.isTimeLimitEnabled) this.startTimer();
-      },
-      error: (err) => console.error('Error:', err)
-    });
-  } else {
-    this.quizService.getRandomQuestions(this.quizId, this.numberOfTiles).subscribe({
-      next: (response: any) => {
-        this.questions = response.$values.map((q: any) => this.mapQuestion(q));
-        this.questionStatuses = new Array(this.questions.length).fill('unanswered');
-        this.resetState();
-        if (this.isTimeLimitEnabled) this.startTimer();
-      },
-      error: (err) => console.error('Error:', err)
-    });
+    if (this.isMultiChoiceEnabled) {
+      this.quizService.getRandomMultiQuestions(
+        this.quizId,
+        this.numberOfTiles,
+        this.answersPerQuestion
+      ).subscribe({
+        next: (response: any) => {
+          this.questions = response.$values.map((q: any) => this.mapQuestion(q));
+          this.questionStatuses = new Array(this.questions.length).fill('unanswered');
+          this.resetState();
+          if (this.isTimeLimitEnabled) this.startTimer();
+        },
+        error: (err) => console.error('Error:', err)
+      });
+    } else {
+      this.quizService.getRandomQuestions(this.quizId, this.numberOfTiles).subscribe({
+        next: (response: any) => {
+          this.questions = response.$values.map((q: any) => this.mapQuestion(q));
+          this.questionStatuses = new Array(this.questions.length).fill('unanswered');
+          this.resetState();
+          if (this.isTimeLimitEnabled) this.startTimer();
+        },
+        error: (err) => console.error('Error:', err)
+      });
+    }
   }
-}
 
   private mapQuestion(question: any): QuestionWithAnswers {
     return {
@@ -253,6 +258,7 @@ export class QuizGameComponent implements OnInit, OnDestroy {
       }
     } else {
       this.quizFinished = true;
+      this.submitResults();
     }
   }
 
@@ -333,5 +339,29 @@ export class QuizGameComponent implements OnInit, OnDestroy {
 
   formatTime(seconds: number): string {
     return `${seconds}s`;
+  }
+
+  submitResults() {
+    if (this.resultsSubmitted) {
+      return;
+    }
+
+    const results: SubmitGameResult = {
+      username: this.username,
+      quizId: this.quizId,
+      totalQuestions: this.questions.length,
+      correctAnswers: this.currentScore
+    };
+
+    this.quizService.submitGameResults(results).subscribe({
+      next: (response) => {
+        this.resultsSubmitted = true;
+        this.submissionError = null;
+      },
+      error: (error) => {
+        console.error('Błąd zapisywania odpowiedzi', error);
+        this.submissionError = 'Wystąpił błąd podczas przesyłania wyników. Spróbuj ponownie później.';
+      }
+    });
   }
 }

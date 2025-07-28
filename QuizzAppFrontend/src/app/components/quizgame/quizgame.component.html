@@ -137,6 +137,18 @@
         <p class="result-message">{{getResultText()}}</p>
       </div>
       
+      <div *ngIf="!resultsSubmitted && !submissionError" class="submission-status">
+        <p>Wysyłanie wyników...</p>
+      </div>
+      
+      <div *ngIf="resultsSubmitted" class="submission-status success">
+        <p>Wyniki są zapisane</p>
+      </div>
+      
+      <div *ngIf="submissionError" class="submission-status error">
+        <p>{{submissionError}}</p>
+      </div>
+      
       <button class="toggle-summary" (click)="showAnswersSummary = !showAnswersSummary">
         {{ showAnswersSummary ? 'Ukryj' : 'Pokaż' }} szczegóły odpowiedzi
       </button>

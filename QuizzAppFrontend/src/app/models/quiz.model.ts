@@ -32,3 +32,10 @@ export interface QuestionSearchResult {
   quizzId: number;
   quizzTitle: string;
 }
+
+export interface SubmitGameResult {
+  username: string;
+  quizId: number;
+  totalQuestions: number;
+  correctAnswers: number;
+}

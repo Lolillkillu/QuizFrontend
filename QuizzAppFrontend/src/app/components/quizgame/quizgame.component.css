@@ -527,3 +527,20 @@ input:checked + .switch-slider:before {
     font-size: 1rem;
   }
 }
+
+.submission-status {
+  margin: 15px 0;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.submission-status p {
+  margin: 0;
+  font-weight: bold;
+}
+
+.submission-status.success {
+  background-color: #d4edda;
+  color: #155724;
+}
