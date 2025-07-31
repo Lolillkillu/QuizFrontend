@@ -13,6 +13,7 @@ import { MultiplayerGameComponent } from './components/multiplayergame/multiplay
 import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
 import { AuthGuard } from './services/auth.guard';
+import { StatisticsComponent } from './components/statistics/statistics.component';
 
 export const routes: Routes = [
   { path: 'quizzes', component: QuizListComponent },
@@ -28,7 +29,8 @@ export const routes: Routes = [
   { path: 'multiplayer', component: MultiplayerGameComponent },
   { path: 'quiz-game/:quizId/multiplayer', component: MultiplayerGameComponent },
   { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent }
+  { path: 'register', component: RegisterComponent },
+  { path: 'statistics', component: StatisticsComponent }
 ];
 
 @NgModule({

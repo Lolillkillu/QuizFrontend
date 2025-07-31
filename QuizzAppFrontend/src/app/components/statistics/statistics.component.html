@@ -1,0 +1,33 @@
+<div class="statistics-container">
+    <div class="top-section">
+        <div class="tile left-tile">
+            <h2>Łączna liczba gier</h2>
+            <div class="game-count">{{ totalGames }}</div>
+        </div>
+
+        <div class="tile right-tile">
+            <h2>Statystyki szczegółowe</h2>
+            <p>tu będą wykresy</p>
+        </div>
+    </div>
+
+    <div class="bottom-section tile">
+        <h2>Historia gier</h2>
+
+        <div class="game-list">
+            <div class="game-item header">
+                <div class="column">Quiz</div>
+                <div class="column">Data</div>
+                <div class="column">Wynik</div>
+                <div class="column">Procent</div>
+            </div>
+
+            <div class="game-item" *ngFor="let game of gameHistory">
+                <div class="column">{{ game.quizTitle }}</div>
+                <div class="column">{{ formatDate(game.dateCompleted) }}</div>
+                <div class="column">{{ game.correctAnswers }}/{{ game.totalQuestions }}</div>
+                <div class="column">{{ formatPercentage(game.scorePercentage) }}%</div>
+            </div>
+        </div>
+    </div>
+</div>

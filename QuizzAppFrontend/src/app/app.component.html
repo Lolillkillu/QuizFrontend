@@ -4,7 +4,7 @@
     <nav>
       <a routerLink="/quizzes" routerLinkActive="active">Lista Quizów</a>
       <a routerLink="/create-quiz" routerLinkActive="active">Stwórz Nowy Quiz</a>
-      <!-- <a routerLink="" routerLinkActive="active">Statystyki</a> -->
+      <a routerLink="/statistics" routerLinkActive="active">Statystyki</a>
 
       <ng-container *ngIf="isAuthenticated; else loginLink">
         <div class="user-info">
