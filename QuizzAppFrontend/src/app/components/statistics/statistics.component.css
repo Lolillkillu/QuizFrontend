@@ -44,27 +44,98 @@
     margin-top: 15px;
 }
 
-.game-list {
+.quiz-list {
     height: calc(100% - 40px);
     overflow-y: auto;
     margin-top: 15px;
 }
 
-.game-item {
-    display: flex;
-    padding: 12px 0;
-    border-bottom: 1px solid #eee;
+.quiz-wrapper {
+  border-bottom: 1px solid #eee;
 }
 
-.game-item.header {
-    font-weight: bold;
-    position: sticky;
-    top: 0;
-    background: white;
-    border-bottom: 2px solid #333;
+.quiz-item {
+  display: flex;
+  padding: 12px 0;
+  cursor: pointer;
+  background: white;
+}
+
+.quiz-item.header {
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fafafa;
+  border-bottom: 2px solid #333;
 }
 
 .column {
-    flex: 1;
-    padding: 0 10px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+}
+
+.title {
+  flex: 3;
+}
+
+.attempts {
+  flex: 1;
+}
+
+.result {
+  flex: 1;
+}
+
+.percentage {
+  flex: 1;
+}
+
+.toggle {
+  flex: 0.5;
+  justify-content: flex-end;
+}
+
+.quiz-details {
+  background: #f9f9f9;
+  padding: 15px;
+  border-top: 1px solid #ddd;
+}
+
+.history-header {
+  display: flex;
+  font-weight: bold;
+  padding: 5px 0;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 5px;
+  background: #f9f9f9;
+}
+
+.history-header > div {
+  padding: 0 10px;
+}
+
+.attempt-item {
+  display: flex;
+  padding: 8px 0;
+  align-items: center;
+}
+
+.attempt-date {
+  flex: 3;
+  padding: 0 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attempt-result {
+  flex: 1;
+  padding: 0 10px;
+}
+
+.attempt-percentage {
+  flex: 1;
+  padding: 0 10px;
 }

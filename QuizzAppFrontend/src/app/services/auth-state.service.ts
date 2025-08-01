@@ -23,8 +23,9 @@ export class AuthStateService {
     }
   }
 
-  login(username: string): void {
+  login(username: string, userId: number): void {
     localStorage.setItem('username', username);
+    localStorage.setItem('userId', userId.toString());
     this.isAuthenticatedSubject.next(true);
     this.usernameSubject.next(username);
   }
@@ -38,5 +39,10 @@ export class AuthStateService {
 
   getUsername(): string {
     return this.usernameSubject.value || localStorage.getItem('username') || '';
+  }
+
+  getUserId(): number {
+    const id = localStorage.getItem('userId');
+    return id ? +id : 0;
   }
 }

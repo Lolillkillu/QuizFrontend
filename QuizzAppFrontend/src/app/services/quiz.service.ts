@@ -122,4 +122,8 @@ export class QuizService {
     const url = `${this.apiUrl}/submit-results`;
     return this.http.post(url, results);
   }
+
+  getUserStatistics(userId: number): Observable<any> {
+    return this.http.get<any>(`https://localhost:7039/api/Statistics/user/${userId}`);
+  }
 }

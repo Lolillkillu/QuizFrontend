@@ -6,6 +6,7 @@ import { AuthStateService } from './auth-state.service';
 interface LoginResponse {
   token: string;
   expiration: string;
+  userId: number;
 }
 
 interface RegistrationData {
@@ -31,7 +32,7 @@ export class AuthService {
     }).pipe(
       tap(response => {
         this.setToken(response.token);
-        this.authState.login(username);
+        this.authState.login(username, response.userId);
       })
     );
   }
