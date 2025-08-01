@@ -139,3 +139,33 @@
   flex: 1;
   padding: 0 10px;
 }
+
+.bottom-content {
+  display: flex;
+  gap: 20px;
+  height: calc(100% - 60px);
+}
+
+.quiz-list-container {
+  flex: 1;
+  overflow-y: auto;
+  border-right: 1px solid #ddd;
+  padding-right: 10px;
+}
+
+.chart-container {
+  flex: 1;
+  position: relative;
+}
+
+.color-box {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  margin-left: 10px;
+}
+
+.quiz-item.selected {
+  background-color: #f0f8ff;
+}

@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { QuizService } from '../../services/quiz.service';
 import { AuthStateService } from '../../services/auth-state.service';
+import { Chart, ChartConfiguration, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-statistics',
@@ -11,67 +14,118 @@ import { AuthStateService } from '../../services/auth-state.service';
   styleUrls: ['./statistics.component.css']
 })
 export class StatisticsComponent implements OnInit {
-  userId: number = 0;
+  @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
+
+  userId = 0;
   quizHistory: any[] = [];
   scienceSummary: any[] = [];
   quizSummaries: any[] = [];
   expandedQuizId: number | null = null;
+  selectedQuizIds = new Set<number>();
+  chart: Chart | null = null;
+
+  colorPalette = [
+    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+    '#FF9F40', '#C9CBCF', '#7AC142', '#FF6B6B', '#4ECDC4'
+  ];
 
   constructor(
     private quizService: QuizService,
-    private authState: AuthStateService
-  ) { }
+    private authStateService: AuthStateService
+  ) {}
 
   ngOnInit(): void {
-    this.userId = this.authState.getUserId();
+    this.userId = this.authStateService.getUserId();
     this.loadUserStatistics();
   }
 
   loadUserStatistics(): void {
-    if (this.userId) {
-      this.quizService.getUserStatistics(this.userId).subscribe({
-        next: (data) => {
-          this.quizHistory = data.quizHistory.$values || [];
-          this.scienceSummary = data.scienceSummary.$values || [];
-          this.createQuizSummaries();
-        },
-        error: (err) => console.error('Błąd podczas pobierania statystyk', err)
-      });
-    }
+    if (!this.userId) return;
+    this.quizService.getUserStatistics(this.userId).subscribe({
+      next: data => {
+        this.quizHistory = data.quizHistory.$values || [];
+        this.scienceSummary = data.scienceSummary.$values || [];
+        this.createQuizSummaries();
+      },
+      error: err => console.error('Błąd podczas pobierania statystyk', err)
+    });
   }
 
   createQuizSummaries(): void {
-    const summaryMap = new Map<number, any>();
-
-    for (const attempt of this.quizHistory) {
-      if (!summaryMap.has(attempt.quizId)) {
-        summaryMap.set(attempt.quizId, {
-          quizId: attempt.quizId,
-          quizTitle: attempt.quizTitle,
+    const map = new Map<number, any>();
+    for (const a of this.quizHistory) {
+      if (!map.has(a.quizId)) {
+        map.set(a.quizId, {
+          quizId: a.quizId,
+          quizTitle: a.quizTitle,
           totalAttempts: 0,
           totalCorrect: 0,
           totalQuestions: 0,
           attempts: []
         });
       }
-      
-      const summary = summaryMap.get(attempt.quizId);
-      summary.totalAttempts++;
-      summary.totalCorrect += attempt.correctAnswers;
-      summary.totalQuestions += attempt.totalQuestions;
-      summary.attempts.push(attempt);
+      const s = map.get(a.quizId)!;
+      s.totalAttempts++;
+      s.totalCorrect += a.correctAnswers;
+      s.totalQuestions += a.totalQuestions;
+      s.attempts.push(a);
     }
-
-    summaryMap.forEach(summary => {
-      summary.overallPercentage = (summary.totalCorrect / summary.totalQuestions) * 100;
-    });
-
-    this.quizSummaries = Array.from(summaryMap.values())
-      .sort((a, b) => b.quizId - a.quizId);
+    map.forEach(s => s.overallPercentage = (s.totalCorrect / s.totalQuestions) * 100);
+    this.quizSummaries = Array.from(map.values()).sort((a, b) => b.quizId - a.quizId);
   }
 
   toggleQuiz(quizId: number): void {
     this.expandedQuizId = this.expandedQuizId === quizId ? null : quizId;
+  }
+
+  toggleQuizSelection(quizId: number): void {
+    this.selectedQuizIds.has(quizId)
+      ? this.selectedQuizIds.delete(quizId)
+      : this.selectedQuizIds.add(quizId);
+    this.updateChart();
+  }
+
+  getQuizColor(quizId: number): string {
+    return this.colorPalette[this.quizSummaries.findIndex(s => s.quizId === quizId) % this.colorPalette.length];
+  }
+
+  updateChart(): void {
+    if (!this.chartCanvas) return;
+
+    const selected = this.quizSummaries.filter(s => this.selectedQuizIds.has(s.quizId));
+    const datasets = selected.map(s => ({
+      label: s.quizTitle,
+      data: s.attempts.map((a: any, i: number) => ({ x: i + 1, y: a.correctAnswers })),
+      borderColor: this.getQuizColor(s.quizId),
+      backgroundColor: this.getQuizColor(s.quizId),
+      tension: 0.3,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      fill: false
+    }));
+
+    const config: ChartConfiguration = {
+      type: 'line',
+      data: { datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: ctx => `${(ctx.raw as any).y} poprawnych`
+            }
+          }
+        },
+        scales: {
+          x: { type: 'linear', title: { display: true, text: 'Numer podejścia' }, ticks: { stepSize: 1 } },
+          y: { title: { display: true, text: 'Poprawne odpowiedzi' }, beginAtZero: true, ticks: { stepSize: 1 } }
+        }
+      }
+    };
+
+    if (this.chart) this.chart.destroy();
+    this.chart = new Chart(this.chartCanvas.nativeElement, config);
   }
 
   formatDate(date: string): string {
