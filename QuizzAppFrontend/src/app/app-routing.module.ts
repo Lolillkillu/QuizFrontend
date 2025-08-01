@@ -30,7 +30,7 @@ export const routes: Routes = [
   { path: 'quiz-game/:quizId/multiplayer', component: MultiplayerGameComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'statistics', component: StatisticsComponent }
+  { path: 'statistics', component: StatisticsComponent, canActivate: [AuthGuard] },
 ];
 
 @NgModule({
