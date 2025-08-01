@@ -89,44 +89,44 @@ export class StatisticsComponent implements OnInit {
     return this.colorPalette[this.quizSummaries.findIndex(s => s.quizId === quizId) % this.colorPalette.length];
   }
 
-  updateChart(): void {
-    if (!this.chartCanvas) return;
+updateChart(): void {
+  if (!this.chartCanvas) return;
 
-    const selected = this.quizSummaries.filter(s => this.selectedQuizIds.has(s.quizId));
-    const datasets = selected.map(s => ({
-      label: s.quizTitle,
-      data: s.attempts.map((a: any, i: number) => ({ x: i + 1, y: a.correctAnswers })),
-      borderColor: this.getQuizColor(s.quizId),
-      backgroundColor: this.getQuizColor(s.quizId),
-      tension: 0.3,
-      pointRadius: 5,
-      pointHoverRadius: 7,
-      fill: false
-    }));
+  const selected = this.quizSummaries.filter(s => this.selectedQuizIds.has(s.quizId));
+  const datasets = selected.map(s => ({
+    label: s.quizTitle,
+    data: [...s.attempts].reverse().map((a: any, i: number) => ({ x: i + 1, y: a.correctAnswers })),
+    borderColor: this.getQuizColor(s.quizId),
+    backgroundColor: this.getQuizColor(s.quizId),
+    tension: 0.3,
+    pointRadius: 5,
+    pointHoverRadius: 7,
+    fill: false
+  }));
 
-    const config: ChartConfiguration = {
-      type: 'line',
-      data: { datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: ctx => `${(ctx.raw as any).y} poprawnych`
-            }
+  const config: ChartConfiguration = {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: ctx => `${(ctx.raw as any).y} poprawnych`
           }
-        },
-        scales: {
-          x: { type: 'linear', title: { display: true, text: 'Numer podejścia' }, ticks: { stepSize: 1 } },
-          y: { title: { display: true, text: 'Poprawne odpowiedzi' }, beginAtZero: true, ticks: { stepSize: 1 } }
         }
+      },
+      scales: {
+        x: { type: 'linear', title: { display: true, text: 'Numer podejścia' }, ticks: { stepSize: 1 } },
+        y: { title: { display: true, text: 'Poprawne odpowiedzi' }, beginAtZero: true, ticks: { stepSize: 1 } }
       }
-    };
+    }
+  };
 
-    if (this.chart) this.chart.destroy();
-    this.chart = new Chart(this.chartCanvas.nativeElement, config);
-  }
+  if (this.chart) this.chart.destroy();
+  this.chart = new Chart(this.chartCanvas.nativeElement, config);
+}
 
   formatDate(date: string): string {
     const d = new Date(date);
