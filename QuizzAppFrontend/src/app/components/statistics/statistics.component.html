@@ -1,14 +1,22 @@
 <div class="statistics-container">
   <div class="top-section">
     <div class="tile left-tile">
-      <h2>Quizy ukończone</h2>
-      <div class="game-count">{{ quizHistory.length }}</div>
+      <h2 class="quiz-title-top">Quizy ukończone</h2>
+      <div class="donut-wrapper">
+        <canvas #donutCanvas width="160" height="160"></canvas>
+        <div class="game-count">{{ quizHistory.length }}</div>
+      </div>
     </div>
 
     <div class="tile right-tile">
       <h2>Statystyki</h2>
-      <div *ngFor="let s of scienceSummary">
-        <strong>{{ s.scienceName }}</strong>: Na {{ s.totalQuizzesTaken }} quizów,
+      <div *ngFor="let s of scienceSummary; let i = index" class="science-stat">
+        <span
+          class="color-box"
+          [style.backgroundColor]="colorPalette[i % colorPalette.length]"
+        ></span>
+        <strong>{{ s.scienceName }}</strong
+        >: Na {{ s.totalQuizzesTaken }} quizów,
         {{ formatPercentage(s.overallAccuracy) }}% poprawnych odpowiedzi
       </div>
     </div>
@@ -32,10 +40,16 @@
           <div class="quiz-item" (click)="toggleQuiz(summary.quizId)">
             <div class="column title">{{ summary.quizTitle }}</div>
             <div class="column attempts">{{ summary.totalAttempts }}</div>
-            <div class="column result">{{ summary.totalCorrect }}/{{ summary.totalQuestions }}</div>
-            <div class="column percentage">{{ formatPercentage(summary.overallPercentage) }}%</div>
+            <div class="column result">
+              {{ summary.totalCorrect }}/{{ summary.totalQuestions }}
+            </div>
+            <div class="column percentage">
+              {{ formatPercentage(summary.overallPercentage) }}%
+            </div>
             <div class="column toggle">
-              <span (click)="toggleQuiz(summary.quizId); $event.stopPropagation()">
+              <span
+                (click)="toggleQuiz(summary.quizId); $event.stopPropagation()"
+              >
                 {{ expandedQuizId === summary.quizId ? '−' : '+' }}
               </span>
             </div>
@@ -57,9 +71,15 @@
 
             <div class="attempts-list">
               <div *ngFor="let attempt of summary.attempts" class="attempt-item">
-                <div class="attempt-date">{{ formatDate(attempt.dateCompleted) }}</div>
-                <div class="attempt-result">{{ attempt.correctAnswers }}/{{ attempt.totalQuestions }}</div>
-                <div class="attempt-percentage">{{ formatPercentage(attempt.scorePercentage) }}%</div>
+                <div class="attempt-date">
+                  {{ formatDate(attempt.dateCompleted) }}
+                </div>
+                <div class="attempt-result">
+                  {{ attempt.correctAnswers }}/{{ attempt.totalQuestions }}
+                </div>
+                <div class="attempt-percentage">
+                  {{ formatPercentage(attempt.scorePercentage) }}%
+                </div>
               </div>
             </div>
           </div>

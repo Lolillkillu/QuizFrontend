@@ -15,6 +15,7 @@ Chart.register(...registerables);
 })
 export class StatisticsComponent implements OnInit {
   @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('donutCanvas', { static: false }) donutCanvas!: ElementRef<HTMLCanvasElement>;
 
   userId = 0;
   quizHistory: any[] = [];
@@ -23,6 +24,7 @@ export class StatisticsComponent implements OnInit {
   expandedQuizId: number | null = null;
   selectedQuizIds = new Set<number>();
   chart: Chart | null = null;
+  donutChart: Chart | null = null;
 
   colorPalette = [
     '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
@@ -46,6 +48,8 @@ export class StatisticsComponent implements OnInit {
         this.quizHistory = data.quizHistory.$values || [];
         this.scienceSummary = data.scienceSummary.$values || [];
         this.createQuizSummaries();
+        this.updateChart();
+        this.createDonutChart();
       },
       error: err => console.error('Błąd podczas pobierania statystyk', err)
     });
@@ -79,9 +83,11 @@ export class StatisticsComponent implements OnInit {
   }
 
   toggleQuizSelection(quizId: number): void {
-    this.selectedQuizIds.has(quizId)
-      ? this.selectedQuizIds.delete(quizId)
-      : this.selectedQuizIds.add(quizId);
+    if (this.selectedQuizIds.has(quizId)) {
+      this.selectedQuizIds.delete(quizId);
+    } else {
+      this.selectedQuizIds.add(quizId);
+    }
     this.updateChart();
   }
 
@@ -89,44 +95,74 @@ export class StatisticsComponent implements OnInit {
     return this.colorPalette[this.quizSummaries.findIndex(s => s.quizId === quizId) % this.colorPalette.length];
   }
 
-updateChart(): void {
-  if (!this.chartCanvas) return;
+  updateChart(): void {
+    if (!this.chartCanvas) return;
 
-  const selected = this.quizSummaries.filter(s => this.selectedQuizIds.has(s.quizId));
-  const datasets = selected.map(s => ({
-    label: s.quizTitle,
-    data: [...s.attempts].reverse().map((a: any, i: number) => ({ x: i + 1, y: a.correctAnswers })),
-    borderColor: this.getQuizColor(s.quizId),
-    backgroundColor: this.getQuizColor(s.quizId),
-    tension: 0.3,
-    pointRadius: 5,
-    pointHoverRadius: 7,
-    fill: false
-  }));
+    const selected = this.quizSummaries.filter(s => this.selectedQuizIds.has(s.quizId));
+    const datasets = selected.map(s => ({
+      label: s.quizTitle,
+      data: [...s.attempts].reverse().map((a: any, i: number) => ({ x: i + 1, y: a.correctAnswers })),
+      borderColor: this.getQuizColor(s.quizId),
+      backgroundColor: this.getQuizColor(s.quizId),
+      tension: 0.3,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      fill: false
+    }));
 
-  const config: ChartConfiguration = {
-    type: 'line',
-    data: { datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: ctx => `${(ctx.raw as any).y} poprawnych`
+    const config: ChartConfiguration = {
+      type: 'line',
+      data: { datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: ctx => `${(ctx.raw as any).y} poprawnych`
+            }
           }
+        },
+        scales: {
+          x: { type: 'linear', title: { display: true, text: 'Numer podejścia' }, ticks: { stepSize: 1 } },
+          y: { title: { display: true, text: 'Poprawne odpowiedzi' }, beginAtZero: true, ticks: { stepSize: 1 } }
         }
-      },
-      scales: {
-        x: { type: 'linear', title: { display: true, text: 'Numer podejścia' }, ticks: { stepSize: 1 } },
-        y: { title: { display: true, text: 'Poprawne odpowiedzi' }, beginAtZero: true, ticks: { stepSize: 1 } }
       }
-    }
-  };
+    };
 
-  if (this.chart) this.chart.destroy();
-  this.chart = new Chart(this.chartCanvas.nativeElement, config);
-}
+    if (this.chart) this.chart.destroy();
+    this.chart = new Chart(this.chartCanvas.nativeElement, config);
+  }
+
+  createDonutChart(): void {
+    if (!this.donutCanvas || !this.scienceSummary.length) return;
+
+    const labels = this.scienceSummary.map(s => s.scienceName);
+    const data = this.scienceSummary.map(s => s.totalQuizzesTaken);
+    const colors = this.scienceSummary.map((_, idx) => this.colorPalette[idx % this.colorPalette.length]);
+
+      const config: ChartConfiguration<'doughnut'> = {
+          type: 'doughnut',
+          data: {
+              labels,
+              datasets: [{
+                  data,
+                  backgroundColor: colors,
+                  borderWidth: 1
+              }]
+          },
+          options: {
+              responsive: false,
+              cutout: '70%',
+              plugins: {
+                  legend: { display: false }
+              }
+          }
+      };
+
+    if (this.donutChart) this.donutChart.destroy();
+    this.donutChart = new Chart(this.donutCanvas.nativeElement, config);
+  }
 
   formatDate(date: string): string {
     const d = new Date(date);
