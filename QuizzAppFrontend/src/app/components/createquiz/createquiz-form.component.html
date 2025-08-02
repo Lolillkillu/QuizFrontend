@@ -2,7 +2,7 @@
   <!-- Krok 1: Tworzenie quizu -->
   <form *ngIf="currentStep === 1" (ngSubmit)="submitQuiz()" class="quiz-form">
     <h2>Krok 1/3: Tworzenie quizu</h2>
-    
+
     <div class="form-group">
       <label>Tytuł quizu</label>
       <input [(ngModel)]="quizzData.Title" name="title" required>
@@ -10,7 +10,15 @@
 
     <div class="form-group">
       <label>Autor</label>
-      <input [(ngModel)]="quizzData.Author" name="author" required>
+      <span class="readonly-field">{{ quizzData.Author }}</span>
+    </div>
+
+    <div class="form-group">
+      <label>Wybierz dziedzinę nauki</label>
+      <select [(ngModel)]="quizzData.ScienceId" name="scienceId" required>
+        <option [value]="0" disabled>Wybierz</option>
+        <option *ngFor="let s of sciences" [value]="s.scienceId">{{ s.scienceName }}</option>
+      </select>
     </div>
 
     <div class="form-group">
@@ -18,7 +26,7 @@
       <textarea [(ngModel)]="quizzData.Description" name="description"></textarea>
     </div>
 
-    <button type="submit" [disabled]="isLoading">
+    <button type="submit" [disabled]="isLoading || !quizzData.Title || quizzData.ScienceId === 0">
       {{ isLoading ? 'Zapisywanie...' : 'Dalej' }}
     </button>
   </form>
@@ -26,7 +34,7 @@
   <!-- Krok 2: Dodawanie pytania -->
   <form *ngIf="currentStep === 2" (ngSubmit)="submitQuestion()" class="question-form">
     <h2>Krok 2/3: Dodaj pytanie</h2>
-    
+
     <div class="form-group">
       <label>Treść pytania</label>
       <textarea [(ngModel)]="questionText" name="question" required></textarea>
@@ -40,7 +48,7 @@
   <!-- Krok 3: Dodawanie odpowiedzi -->
   <div *ngIf="currentStep === 3" class="answers-form">
     <h2>Krok 3/3: Dodaj odpowiedzi</h2>
-    
+
     <div class="answer-input">
       <input [(ngModel)]="newAnswer.answer" placeholder="Treść odpowiedzi">
       <label>
@@ -58,12 +66,11 @@
     </div>
 
     <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
-    
+
     <button 
       type="button" 
       (click)="submitAnswers()" 
-      [disabled]="answers.length < 4 || isLoading"
-    >
+      [disabled]="answers.length < 4 || isLoading">
       {{ isLoading ? 'Zapisywanie...' : 'Zakończ' }}
     </button>
   </div>

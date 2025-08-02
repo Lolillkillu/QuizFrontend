@@ -73,3 +73,12 @@ button:disabled {
   background: #f8d7da;
   border-radius: 4px;
 }
+
+.readonly-field {
+  display: block;
+  padding: 0.8rem;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  color: #555;
+}

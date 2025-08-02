@@ -1,10 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { QuizService } from '../../services/quiz.service';
 import { CreateQuiz } from '../../models/createquiz.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Answer } from '../../models/answer.model';
+import { AuthStateService } from '../../services/auth-state.service';
+import { ScienceModel } from '../../models/quiz.model';
 
 @Component({
   selector: 'app-createquiz-form',
@@ -13,17 +15,18 @@ import { Answer } from '../../models/answer.model';
   templateUrl: './createquiz-form.component.html',
   styleUrls: ['./createquiz-form.component.css']
 })
-export class CreateQuizFormComponent {
+export class CreateQuizFormComponent implements OnInit {
   currentStep: number = 1;
-  
+
   quizzData: CreateQuiz = {
     Title: '',
-    Author: '',
-    Description: ''
+    Description: '',
+    ScienceId: 0,
+    Author: ''
   };
 
+  sciences: ScienceModel[] = [];
   questionText: string = '';
-  
   answers: Partial<Answer>[] = [];
   newAnswer: Partial<Answer> = {
     answer: '',
@@ -37,8 +40,23 @@ export class CreateQuizFormComponent {
 
   constructor(
     private quizService: QuizService,
+    private authState: AuthStateService,
     private router: Router
   ) {}
+
+  ngOnInit() {
+    this.quizzData.Author = this.authState.getUsername();
+    this.loadSciences();
+  }
+
+  loadSciences() {
+    this.quizService.getSciences().subscribe({
+      next: (data) => {
+        this.sciences = data;
+      },
+      error: () => this.handleError('Nie udało się pobrać listy nauk')
+    });
+  }
 
   submitQuiz() {
     this.isLoading = true;
@@ -48,7 +66,7 @@ export class CreateQuizFormComponent {
         this.currentStep = 2;
         this.isLoading = false;
       },
-      error: (err) => this.handleError('Błąd podczas tworzenia quizu')
+      error: () => this.handleError('Błąd podczas tworzenia quizu')
     });
   }
 
@@ -61,7 +79,7 @@ export class CreateQuizFormComponent {
           this.currentStep = 3;
           this.isLoading = false;
         },
-        error: (err) => this.handleError('Błąd podczs dodawania pytania')
+        error: () => this.handleError('Błąd podczas dodawania pytania')
       });
   }
 
@@ -81,14 +99,13 @@ export class CreateQuizFormComponent {
       this.errorMessage = 'Wymagane minimum 4 odpowiedzi z przynajmniej jedną poprawną';
       return;
     }
-  
+
     this.isLoading = true;
-    
     const answersToSend = this.answers.map(a => ({
       answer: a.answer,
       isCorrect: a.isCorrect
     }));
-  
+
     this.quizService.addAnswersToQuestion(this.createdQuestionId, answersToSend)
       .subscribe({
         next: () => {

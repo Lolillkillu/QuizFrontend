@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { QuestionSearchResult, QuestionWithAnswers, Quiz, SubmitGameResult } from '../models/quiz.model';
+import { QuestionSearchResult, QuestionWithAnswers, Quiz, ScienceModel, SubmitGameResult } from '../models/quiz.model';
 import { CreateQuiz } from '../models/createquiz.model';
 import { Question } from '../models/question.model';
 import { Answer } from '../models/answer.model';
@@ -125,5 +125,11 @@ export class QuizService {
 
   getUserStatistics(userId: number): Observable<any> {
     return this.http.get<any>(`https://localhost:7039/api/Statistics/user/${userId}`);
+  }
+
+  getSciences(): Observable<ScienceModel[]> {
+    return this.http.get<any>('https://localhost:7039/api/Science').pipe(
+      map(res => res.$values || [])
+    );
   }
 }

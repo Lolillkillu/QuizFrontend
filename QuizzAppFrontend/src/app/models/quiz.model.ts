@@ -39,3 +39,8 @@ export interface SubmitGameResult {
   totalQuestions: number;
   correctAnswers: number;
 }
+
+export interface ScienceModel {
+  scienceId: number;
+  scienceName: string;
+}
