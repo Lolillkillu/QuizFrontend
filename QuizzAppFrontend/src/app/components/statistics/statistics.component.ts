@@ -100,6 +100,7 @@ export class StatisticsComponent implements OnInit {
     } else {
       this.quizSummaries.forEach(s => this.selectedQuizIds.add(s.quizId));
     }
+    this.updateChart();
   }
 
   getQuizColor(quizId: number): string {
