@@ -1,94 +1,102 @@
 <div class="statistics-container">
-  <div class="top-section">
-    <div class="tile left-tile">
-      <h2 class="quiz-title-top">Quizy ukończone</h2>
-      <div class="donut-wrapper">
-        <canvas #donutCanvas width="160" height="160"></canvas>
-        <div class="game-count">{{ quizHistory.length }}</div>
-      </div>
-    </div>
-
-    <div class="tile right-tile">
-      <h2>Statystyki</h2>
-      <div *ngFor="let s of scienceSummary; let i = index" class="science-stat">
-        <span
-          class="color-box"
-          [style.backgroundColor]="colorPalette[i % colorPalette.length]"
-        ></span>
-        <strong>{{ s.scienceName }}</strong
-        >: Na {{ s.totalQuizzesTaken }} quizów,
-        {{ formatPercentage(s.overallAccuracy) }}% poprawnych odpowiedzi
-      </div>
-    </div>
-  </div>
-
-  <div class="bottom-section tile">
-    <h2>Podsumowanie quizów</h2>
-
-    <div class="bottom-content">
-      <div class="quiz-list-container">
-        <div class="quiz-item header">
-          <div class="column title">Quiz</div>
-          <div class="column attempts">Podejścia</div>
-          <div class="column result">Wynik</div>
-          <div class="column percentage">%</div>
-          <div class="column toggle">+/-</div>
-          <div class="column color">Kolor</div>
+    <div class="top-section">
+        <div class="tile left-tile">
+            <h2 class="quiz-title-top">Quizy ukończone</h2>
+            <div class="donut-wrapper">
+                <canvas #donutCanvas width="160" height="160"></canvas>
+                <div class="game-count">{{ quizHistory.length }}</div>
+            </div>
         </div>
 
-        <div *ngFor="let summary of quizSummaries" class="quiz-wrapper">
-          <div class="quiz-item" (click)="toggleQuiz(summary.quizId)">
-            <div class="column title">{{ summary.quizTitle }}</div>
-            <div class="column attempts">{{ summary.totalAttempts }}</div>
-            <div class="column result">
-              {{ summary.totalCorrect }}/{{ summary.totalQuestions }}
+        <div class="tile right-tile">
+            <h2>Statystyki</h2>
+            <div *ngFor="let s of scienceSummary; let i = index" class="science-stat">
+                <span class="color-box" [style.backgroundColor]="colorPalette[i % colorPalette.length]"></span>
+                <strong>{{ s.scienceName }}</strong>: Na {{ s.totalQuizzesTaken }} quizów,
+                {{ formatPercentage(s.overallAccuracy) }}% poprawnych odpowiedzi
             </div>
-            <div class="column percentage">
-              {{ formatPercentage(summary.overallPercentage) }}%
-            </div>
-            <div class="column toggle">
-              <span
-                (click)="toggleQuiz(summary.quizId); $event.stopPropagation()"
-              >
-                {{ expandedQuizId === summary.quizId ? '−' : '+' }}
-              </span>
-            </div>
-            <div class="column color">
-              <span
-                class="color-box"
-                [style.backgroundColor]="getQuizColor(summary.quizId)"
-                (click)="toggleQuizSelection(summary.quizId); $event.stopPropagation()"
-              ></span>
-            </div>
-          </div>
-
-          <div *ngIf="expandedQuizId === summary.quizId" class="quiz-details">
-            <div class="history-header">
-              <div class="attempt-date">Data</div>
-              <div class="attempt-result">Wynik</div>
-              <div class="attempt-percentage">%</div>
-            </div>
-
-            <div class="attempts-list">
-              <div *ngFor="let attempt of summary.attempts" class="attempt-item">
-                <div class="attempt-date">
-                  {{ formatDate(attempt.dateCompleted) }}
-                </div>
-                <div class="attempt-result">
-                  {{ attempt.correctAnswers }}/{{ attempt.totalQuestions }}
-                </div>
-                <div class="attempt-percentage">
-                  {{ formatPercentage(attempt.scorePercentage) }}%
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-
-      <div class="chart-container">
-        <canvas #chartCanvas></canvas>
-      </div>
     </div>
-  </div>
+
+    <div class="bottom-section tile">
+        <div class="bottom-section-header">
+            <h2>Podsumowanie quizów</h2>
+            <i class="fas fa-trash-alt delete-icon" [class.disabled]="selectedQuizIds.size === 0 || isDeleting"
+                [title]="selectedQuizIds.size > 0 ? 'Usuń zaznaczone statystyki' : 'Zaznacz quizy do usunięcia'"
+                (click)="deleteSelectedStatistics()">
+            </i>
+        </div>
+
+        <div class="bottom-content">
+            <div class="quiz-list-container">
+                <div class="quiz-item header">
+                    <div class="column checkbox">
+                        <input type="checkbox" [checked]="selectedQuizIds.size === quizSummaries.length"
+                            (change)="toggleAllSelection()" [disabled]="quizSummaries.length === 0">
+                    </div>
+                    <div class="column title">Quiz</div>
+                    <div class="column attempts">Podejścia</div>
+                    <div class="column result">Wynik</div>
+                    <div class="column percentage">%</div>
+                    <div class="column toggle">+/-</div>
+                    <div class="column color">Kolor</div>
+                </div>
+
+                <div *ngFor="let summary of quizSummaries" class="quiz-wrapper">
+                    <div class="quiz-item" (click)="toggleQuiz(summary.quizId)">
+                        <div class="column checkbox">
+                            <input type="checkbox" [checked]="selectedQuizIds.has(summary.quizId)"
+                                (change)="toggleQuizSelection(summary.quizId); $event.stopPropagation()"
+                                (click)="$event.stopPropagation()">
+                        </div>
+                        <div class="column title">{{ summary.quizTitle }}</div>
+                        <div class="column attempts">{{ summary.totalAttempts }}</div>
+                        <div class="column result">
+                            {{ summary.totalCorrect }}/{{ summary.totalQuestions }}
+                        </div>
+                        <div class="column percentage">
+                            {{ formatPercentage(summary.overallPercentage) }}%
+                        </div>
+                        <div class="column toggle">
+                            <span (click)="toggleQuiz(summary.quizId); $event.stopPropagation()">
+                                {{ expandedQuizId === summary.quizId ? '−' : '+' }}
+                            </span>
+                        </div>
+                        <div class="column color">
+                            <span class="color-box" [style.backgroundColor]="getQuizColor(summary.quizId)"
+                                (click)="toggleQuizSelection(summary.quizId); $event.stopPropagation()">
+                            </span>
+                        </div>
+                    </div>
+
+                    <div *ngIf="expandedQuizId === summary.quizId" class="quiz-details">
+                        <div class="history-header">
+                            <div class="attempt-date">Data</div>
+                            <div class="attempt-result">Wynik</div>
+                            <div class="attempt-percentage">%</div>
+                        </div>
+
+                        <div class="attempts-list">
+                            <div *ngFor="let attempt of summary.attempts" class="attempt-item">
+                                <div class="attempt-date">
+                                    {{ formatDate(attempt.dateCompleted) }}
+                                </div>
+                                <div class="attempt-result">
+                                    {{ attempt.correctAnswers }}/{{ attempt.totalQuestions }}
+                                </div>
+                                <div class="attempt-percentage">
+                                    {{ formatPercentage(attempt.scorePercentage) }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas #chartCanvas></canvas>
+            </div>
+        </div>
+        <div *ngIf="deleteError" class="error-message">{{ deleteError }}</div>
+    </div>
 </div>

@@ -132,4 +132,8 @@ export class QuizService {
       map(res => res.$values || [])
     );
   }
+
+  deleteQuizStatistics(quizId: number, userId: number): Observable<any> {
+    return this.http.delete(`https://localhost:7039/api/Statistics/quiz/${quizId}/user/${userId}`);
+  }
 }

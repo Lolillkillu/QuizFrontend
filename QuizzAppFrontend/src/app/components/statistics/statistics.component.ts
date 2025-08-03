@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { QuizService } from '../../services/quiz.service';
 import { AuthStateService } from '../../services/auth-state.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
+import { forkJoin } from 'rxjs';
 
 Chart.register(...registerables);
 
@@ -25,6 +26,8 @@ export class StatisticsComponent implements OnInit {
   selectedQuizIds = new Set<number>();
   chart: Chart | null = null;
   donutChart: Chart | null = null;
+  isDeleting = false;
+  deleteError: string | null = null;
 
   colorPalette = [
     '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
@@ -89,6 +92,14 @@ export class StatisticsComponent implements OnInit {
       this.selectedQuizIds.add(quizId);
     }
     this.updateChart();
+  }
+
+  toggleAllSelection(): void {
+    if (this.selectedQuizIds.size === this.quizSummaries.length) {
+      this.selectedQuizIds.clear();
+    } else {
+      this.quizSummaries.forEach(s => this.selectedQuizIds.add(s.quizId));
+    }
   }
 
   getQuizColor(quizId: number): string {
@@ -162,6 +173,38 @@ export class StatisticsComponent implements OnInit {
 
     if (this.donutChart) this.donutChart.destroy();
     this.donutChart = new Chart(this.donutCanvas.nativeElement, config);
+  }
+
+  deleteSelectedStatistics(): void {
+    if (this.selectedQuizIds.size === 0) {
+      alert('Wybierz przynajmniej jeden quiz do usunięcia');
+      return;
+    }
+
+    if (!confirm(`Czy na pewno chcesz usunąć statystyki dla ${this.selectedQuizIds.size} quizów?`)) {
+      return;
+    }
+
+    this.isDeleting = true;
+    this.deleteError = null;
+
+    const deleteRequests = Array.from(this.selectedQuizIds).map(quizId =>
+      this.quizService.deleteQuizStatistics(quizId, this.userId)
+    );
+
+    forkJoin(deleteRequests).subscribe({
+      next: () => {
+        this.selectedQuizIds.clear();
+        this.loadUserStatistics();
+        this.isDeleting = false;
+        this.deleteError = null;
+      },
+      error: (err) => {
+        console.error('Błąd podczas usuwania statystyk', err);
+        this.deleteError = 'Wystąpił błąd podczas usuwania statystyk';
+        this.isDeleting = false;
+      }
+    });
   }
 
   formatDate(date: string): string {
