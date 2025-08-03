@@ -30,8 +30,8 @@ export class StatisticsComponent implements OnInit {
   deleteError: string | null = null;
 
   colorPalette = [
-    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-    '#FF9F40', '#C9CBCF', '#7AC142', '#FF6B6B', '#4ECDC4'
+    '#FF6384', '#36A2EB', '#FFCE56', '#535354ff', '#9966FF',
+    '#f7830eff', '#171718ff', '#7AC142', '#FF6B6B', '#070984ff'
   ];
 
   constructor(
