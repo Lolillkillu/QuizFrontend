@@ -4,7 +4,7 @@ export interface Quiz {
   quizzId: number;
   title: string;
   description?: string;
-  scienceId?: number;
+  scienceId?: number | null;
   author: string;
   questions: Question[];
 }

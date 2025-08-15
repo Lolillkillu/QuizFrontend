@@ -1,17 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { QuizService } from '../../services/quiz.service';
-import { Quiz } from '../../models/quiz.model';
+import { Quiz, ScienceModel } from '../../models/quiz.model';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Question } from '../../models/question.model';
 import { Answer } from '../../models/answer.model';
 import { forkJoin, of, switchMap } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-quiz-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './quizdetail.component.html',
   styleUrls: ['./quizdetail.component.css'],
   animations: [
@@ -28,11 +29,17 @@ export class QuizDetailComponent implements OnInit {
   isLoading = true;
   error?: string;
 
+  isEditing = false;
+  editedTitle = '';
+  editedDescription = '';
+  editedScienceId: number | null = null;
+  sciences: ScienceModel[] = [];
+
   constructor(
     private quizService: QuizService,
     private route: ActivatedRoute,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
@@ -40,6 +47,9 @@ export class QuizDetailComponent implements OnInit {
       this.quizService.getQuiz(id).subscribe({
         next: (data) => {
           this.quiz = data;
+          this.editedTitle = data.title;
+          this.editedDescription = data.description ?? '';
+          this.editedScienceId = data.scienceId ?? null;
           this.isLoading = false;
         },
         error: (err) => {
@@ -47,6 +57,42 @@ export class QuizDetailComponent implements OnInit {
           this.isLoading = false;
         }
       });
+    });
+
+    this.quizService.getSciences().subscribe(sciences => {
+      this.sciences = sciences;
+    });
+  }
+
+  toggleEdit() {
+    this.isEditing = !this.isEditing;
+    if (!this.isEditing && this.quiz) {
+      this.editedTitle = this.quiz.title;
+      this.editedDescription = this.quiz.description ?? '';
+      this.editedScienceId = this.quiz.scienceId ?? null;
+    }
+  }
+
+  saveChanges() {
+    if (!this.quiz) return;
+
+    this.quizService.updateQuiz(this.quiz.quizzId, {
+      quizzId: this.quiz.quizzId,
+      title: this.editedTitle,
+      description: this.editedDescription,
+      scienceId: this.editedScienceId,
+      author: this.quiz.author
+    }).subscribe({
+      next: () => {
+        this.quiz!.title = this.editedTitle;
+        this.quiz!.description = this.editedDescription;
+        this.quiz!.scienceId = this.editedScienceId;
+        this.isEditing = false;
+      },
+      error: (err) => {
+        console.error('Błąd podczas zapisywania zmian:', err);
+        alert('Nie udało się zapisać zmian.');
+      }
     });
   }
 
@@ -141,5 +187,4 @@ export class QuizDetailComponent implements OnInit {
       }
     });
   }
-
 }

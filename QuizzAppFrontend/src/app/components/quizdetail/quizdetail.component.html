@@ -8,13 +8,54 @@
 
 <div *ngIf="quiz" class="quiz-details" @fadeIn>
   <div class="quiz-header">
-    <h1>{{ quiz.title }}</h1>
-    <a (click)="deleteQuiz()" class="delete-icon" title="Usuń quiz">
-      <i class="material-icons">delete</i>
-    </a>
+    <div class="quiz-title-row">
+      <div class="title-wrapper">
+        <h1 *ngIf="!isEditing">{{ quiz.title }}</h1>
+        <input *ngIf="isEditing"
+               [(ngModel)]="editedTitle"
+               class="form-control title-input"
+               placeholder="Tytuł quizu" />
+      </div>
+
+      <div class="quiz-icons">
+        <a (click)="toggleEdit()"
+           class="icon-btn"
+           [title]="isEditing ? 'Anuluj' : 'Edytuj quiz'">
+          <i class="material-icons">{{ isEditing ? 'close' : 'edit' }}</i>
+        </a>
+        <a (click)="deleteQuiz()"
+           class="icon-btn delete-icon"
+           title="Usuń quiz">
+          <i class="material-icons">delete</i>
+        </a>
+      </div>
+    </div>
+
+    <div class="quiz-meta">
+      <p *ngIf="!isEditing && quiz.description" class="description">{{ quiz.description }}</p>
+      <textarea *ngIf="isEditing"
+                [(ngModel)]="editedDescription"
+                class="form-control"
+                placeholder="Opis"></textarea>
+
+      <p *ngIf="!isEditing" class="author">Autor: {{ quiz.author }}</p>
+    </div>
+
+    <div *ngIf="isEditing" class="form-group">
+      <label>Dziedzina nauki:</label>
+      <select [(ngModel)]="editedScienceId" class="form-control">
+        <option [ngValue]="null">Brak</option>
+        <option *ngFor="let science of sciences" [ngValue]="science.scienceId">
+          {{ science.scienceName }}
+        </option>
+      </select>
+    </div>
+
+    <div *ngIf="isEditing" class="form-actions">
+      <button class="btn btn-primary" (click)="saveChanges()">Zapisz</button>
+      <button class="btn btn-secondary" (click)="toggleEdit()">Anuluj</button>
+    </div>
   </div>
-  <p *ngIf="quiz.description" class="description">{{ quiz.description }}</p>
-  <p class="author">Autor: {{ quiz.author }}</p>
 
   <div class="questions-section">
     <h2>Pytania</h2>
@@ -22,45 +63,48 @@
       <div class="question-header">
         <h3>{{ question.question }}</h3>
         <div class="question-actions">
-          <a [routerLink]="['/quizzes', quiz.quizzId, 'editquestion', question.questionId]" class="edit-icon">
+          <a [routerLink]="['/quizzes', quiz.quizzId, 'editquestion', question.questionId]"
+             class="edit-icon">
             <i class="material-icons">edit</i>
           </a>
-          <a (click)="deleteQuestion(question.questionId)" class="delete-icon">
+          <a (click)="deleteQuestion(question.questionId)"
+             class="delete-icon">
             <i class="material-icons">delete</i>
           </a>
         </div>
       </div>
+
       <div class="answers-section">
         <h4>Odpowiedzi:</h4>
-        <div *ngFor="let answer of question.answers" class="answer" [class.correct-answer]="answer.isCorrect">
+        <div *ngFor="let answer of question.answers"
+             class="answer"
+             [class.correct-answer]="answer.isCorrect">
           <div class="answer-content">
             {{ answer.answer }}
             <span *ngIf="answer.isCorrect" class="correct-marker">✓</span>
             <div class="action-icons">
               <a [routerLink]="['/quizzes', quiz.quizzId, 'questions', question.questionId, 'answers', answer.answerId, 'edit']"
-                class="edit-icon">
+                 class="edit-icon">
                 <i class="material-icons">edit</i>
               </a>
-              <a (click)="deleteAnswer(question, answer)" class="delete-icon">
+              <a (click)="deleteAnswer(question, answer)"
+                 class="delete-icon">
                 <i class="material-icons">delete</i>
               </a>
             </div>
           </div>
         </div>
-        <a 
-          [routerLink]="['/quizzes', quiz.quizzId, 'questions', question.questionId, 'add-answer']" 
-          class="add-answer-button"
-        >
+
+        <a [routerLink]="['/quizzes', quiz.quizzId, 'questions', question.questionId, 'add-answer']"
+           class="add-answer-button">
           <i class="material-icons">add</i> Dodaj odpowiedź
         </a>
       </div>
     </div>
-    
+
     <div class="add-question-section">
-      <a 
-        [routerLink]="['/quizzes', quiz.quizzId, 'add-question']" 
-        class="add-question-button"
-      >
+      <a [routerLink]="['/quizzes', quiz.quizzId, 'add-question']"
+         class="add-question-button">
         <i class="material-icons">add</i> Dodaj nowe pytanie
       </a>
     </div>

@@ -136,4 +136,14 @@ export class QuizService {
   deleteQuizStatistics(quizId: number, userId: number): Observable<any> {
     return this.http.delete(`https://localhost:7039/api/Statistics/quiz/${quizId}/user/${userId}`);
   }
+
+  updateQuiz(quizId: number, updatedData: Partial<Quiz>): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${quizId}`, {
+      quizzId: quizId,
+      title: updatedData.title,
+      description: updatedData.description,
+      author: updatedData.author,
+      scienceId: updatedData.scienceId
+    });
+  }
 }
